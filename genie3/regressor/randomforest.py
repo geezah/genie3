@@ -4,6 +4,7 @@ from numpy.typing import NDArray
 from sklearn.ensemble import (
     RandomForestRegressor as _RandomForestRegressor,
 )
+
 from .protocol import RegressorProtocol
 
 DefaultRandomForestConfiguration = {
@@ -11,12 +12,14 @@ DefaultRandomForestConfiguration = {
         "n_estimators": 100,
         "random_state": 42,
         "max_features": 0.1,
-        "n_jobs" : 8,
     },
     "fit_params": {},
 }
 
+
 class RandomForestRegressor(RegressorProtocol):
+    DefaultConfiguration = DefaultRandomForestConfiguration
+
     def __init__(self, **init_params: Dict[str, Any]):
         self.regressor: _RandomForestRegressor = _RandomForestRegressor(
             **init_params

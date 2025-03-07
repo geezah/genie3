@@ -7,12 +7,10 @@ from tqdm.auto import tqdm
 
 from genie3.config import RegressorConfig
 from genie3.data import GRNDataset
-from genie3.data.utils import map_data
 
 from .regressor import (
     RegressorFactory,
 )
-
 
 def run(
     dataset: GRNDataset, regressor_config: RegressorConfig
@@ -68,7 +66,9 @@ def calculate_importances(
         miniters=num_genes // 100,
     )
     for target_gene in progress_bar:
-        regressor = RegressorFactory[regressor_type](**regressor_init_params)
+        regressor = RegressorFactory.get(regressor_type)(
+            **regressor_init_params
+        )
         X, y, input_genes = partition_data(
             gene_expressions,
             transcription_factor_indices,
@@ -86,32 +86,40 @@ def rank_genes_by_importance(
     transcription_factor_indices: List[int],
     gene_names: List[str],
 ) -> pd.DataFrame:
-    predicted_network = []
-    num_genes, num_transcription_factors = (
-        importance_matrix.shape[0],
-        importance_matrix.shape[1],
-    )
-    # Create a DataFrame of combinations of target genes and regulators
+    """
+    Ranks genes by their importance scores and returns a DataFrame with gene names.
+
+    Args:
+        importance_matrix: Matrix of importance scores
+        transcription_factor_indices: List of TF indices
+        gene_names: List of gene names
+
+    Returns:
+        pandas DataFrame with columns (transcription_factor, target_gene, importance)
+        where transcription_factor and target_gene are gene names
+    """
+    rows = []
+    num_genes, num_transcription_factors = importance_matrix.shape
+
+    # Create list of regulator-target pairs with importance scores
     for i in range(num_genes):
         for j in range(num_transcription_factors):
-            regulator_target_importance_tuples = (
-                transcription_factor_indices[j],
-                i,
-                importance_matrix[i, j],
-            )
-            predicted_network.append(regulator_target_importance_tuples)
+            tf_idx = transcription_factor_indices[j]
+            target_idx = i
+            importance = importance_matrix[i, j]
+            
+            # Use gene names instead of indices
+            tf_name = gene_names[tf_idx]
+            target_name = gene_names[target_idx]
+            
+            rows.append({
+                "transcription_factor": tf_name,
+                "target_gene": target_name,
+                "importance": float(importance)
+            })
 
-    predicted_network = pd.DataFrame(
-        predicted_network,
-        columns=["transcription_factor", "target_gene", "importance"],
-    )
-    predicted_network.sort_values(
-        by="importance", ascending=False, inplace=True
-    )
-    predicted_network.reset_index(drop=True, inplace=True)
-    predicted_network = map_data(
-        predicted_network,
-        gene_names,
-        subset=["transcription_factor", "target_gene"],
-    )
+    # Convert to DataFrame and sort by importance
+    predicted_network = pd.DataFrame(rows)
+    predicted_network = predicted_network.sort_values(by="importance", ascending=False)
+    
     return predicted_network

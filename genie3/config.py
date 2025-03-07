@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Self
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-from .regressor import ConfigurationFactory, RegressorFactory
+from .regressor import RegressorFactory
 
 
 class DataConfig(BaseModel):
@@ -37,7 +37,7 @@ class RegressorConfig(BaseModel):
 
     name: str = Field(
         "ExtraTreesRegressor",
-        description=f"Type of regressor to use. One of: {RegressorFactory.keys()}",
+        description=f"Type of regressor to use. One of: {RegressorFactory._regressors.keys()}",
     )
     init_params: Optional[Dict[str, Any]] = Field(
         None,
@@ -51,18 +51,18 @@ class RegressorConfig(BaseModel):
     @field_validator("name", mode="after")
     @classmethod
     def check_regressor_name(cls, value: str) -> str:
-        if value not in RegressorFactory.keys():
+        if value not in RegressorFactory._regressors.keys():
             raise ValueError(
-                f"Regressor name must be one of: {RegressorFactory.keys()}"
+                f"Regressor name must be one of: {RegressorFactory._regressors.keys()}"
             )
         return value
 
     @model_validator(mode="after")
     def set_default_params(self) -> Self:
         if not self.init_params:
-            self.init_params = ConfigurationFactory[self.name]["init_params"]
+            self.init_params = RegressorFactory.get(self.name).DefaultConfiguration["init_params"]
         if not self.fit_params:
-            self.fit_params = ConfigurationFactory[self.name]["fit_params"]
+            self.fit_params = RegressorFactory.get(self.name).DefaultConfiguration["fit_params"]
         return self
 
 

@@ -20,6 +20,8 @@ DefaultGradientBoostingConfiguration = {
 
 
 class GradientBoostingRegressor(RegressorProtocol):
+    DefaultConfiguration = DefaultGradientBoostingConfiguration
+
     def __init__(self, **init_params: Dict[str, Any]):
         self.regressor: _GradientBoostingRegressor = (
             _GradientBoostingRegressor(

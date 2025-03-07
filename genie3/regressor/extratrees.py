@@ -19,6 +19,8 @@ DefaultExtraTreesConfiguration = {
 
 
 class ExtraTreesRegressor(RegressorProtocol):
+    
+    DefaultConfiguration = DefaultExtraTreesConfiguration
     def __init__(self, **init_params: Dict[str, Any]):
         self.regressor: _ExtraTreesRegressor = _ExtraTreesRegressor(
             **init_params
