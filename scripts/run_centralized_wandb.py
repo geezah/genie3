@@ -1,4 +1,3 @@
-from os import environ
 from pathlib import Path
 
 from typer import Typer
@@ -37,6 +36,7 @@ def main(
         },
     ) as run:
         predicted_network = run_genie3(grn_dataset, cfg.regressor)
+
         y_preds, y_true = prepare_evaluation(
             predicted_network, grn_dataset.reference_network
         )
