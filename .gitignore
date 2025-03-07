@@ -4,3 +4,4 @@ credentials.conf
 *_data/
 dist
 wandb
+.venv
