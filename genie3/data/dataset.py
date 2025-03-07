@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from pydantic import (
@@ -10,8 +10,6 @@ from pydantic import (
     model_validator,
 )
 from typing_extensions import Self
-
-from genie3.data.utils import map_data
 
 
 class GRNDataset(BaseModel):
@@ -62,8 +60,8 @@ class GRNDataset(BaseModel):
         names_to_indices = {
             name: index for index, name in enumerate(self._gene_names)
         }
-        self._transcription_factor_indices = map_data(
-            self.transcription_factor_names, names_to_indices
+        self._transcription_factor_indices = (
+            self.transcription_factor_names.map(names_to_indices)
         )
 
     @field_validator("reference_network", mode="after")
@@ -97,6 +95,22 @@ class GRNDataset(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def validate_unique_gene_names(self) -> Self:
+        """Validate that gene names in gene_expressions are unique."""
+        if len(self.gene_expressions.columns) != len(
+            set(self.gene_expressions.columns)
+        ):
+            duplicates = [
+                col
+                for col in self.gene_expressions.columns
+                if list(self.gene_expressions.columns).count(col) > 1
+            ]
+            raise ValueError(
+                f"Gene names must be unique. Found duplicate gene names: {set(duplicates)}"
+            )
+        return self
+
+    @model_validator(mode="after")
     def validate_reference_network(self) -> Self:
         if self.reference_network is not None:
             required_columns = {
@@ -110,6 +124,20 @@ class GRNDataset(BaseModel):
             if missing_columns:
                 raise ValueError(
                     f"The reference_network DataFrame is missing the following required columns: {missing_columns}"
+                )
+
+            # Check for duplicate entries in the reference network
+            if self.reference_network.duplicated(
+                subset=["transcription_factor", "target_gene"]
+            ).any():
+                duplicates = self.reference_network[
+                    self.reference_network.duplicated(
+                        subset=["transcription_factor", "target_gene"],
+                        keep=False,
+                    )
+                ]
+                raise ValueError(
+                    f"Found duplicate entries in the reference network: \n{duplicates}"
                 )
 
             tfs_not_in_columns = set(
@@ -144,6 +172,7 @@ class GRNDataset(BaseModel):
                         ]
                     )
                 )
+
         return self
 
 
