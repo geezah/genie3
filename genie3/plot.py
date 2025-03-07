@@ -32,7 +32,7 @@ def plot_roc_curve(
     ax.set_title("ROC Curve")
     ax.set_xlabel("False Positive Rate (FPR)")
     ax.set_ylabel("True Positive Rate (TPR)")
-    ax.legend(loc="upper right")
+    ax.legend(loc="lower right")
     ax.grid(True)
     return fig
 
