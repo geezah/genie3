@@ -79,6 +79,7 @@ results : Results = run_evaluation(y_preds, y_true)
 
 
 ```
+
 ### Using the CLI
 
 You can also run GENIE3 using the provided CLI. This CLI can be used for inference only as well as for evaluation against a reference network. The following command will run GENIE3 with the configuration file `configs/extratrees.yaml`:
@@ -111,7 +112,7 @@ regressor:
 
 A tab-separated file with genes as columns, samples as rows, and gene expression values as entries:
 
-```
+```csv
         Gene1   Gene2   Gene3   ...
 Sample1 0.5     1.2     0.8     ...
 Sample2 0.7     0.9     1.1     ...
@@ -121,7 +122,8 @@ Sample2 0.7     0.9     1.1     ...
 ### Transcription Factor List
 
 A tab-separated file with one column containing transcription factor names. The transcription factors are expected to be present in the columns of the gene expression data.
-```
+
+```csv
 TF
 Gene1
 Gene2
@@ -132,7 +134,7 @@ Gene2
 
 A tab-separated file with columns for transcription factors, target genes, and binary labels, indicating the presence of an edge between the transcription factor and the target gene:
 
-```
+```csv
 transcription_factor  target_gene  label
 Gene1                 Gene2        1
 Gene1                 Gene3        0
@@ -194,10 +196,23 @@ predicted_network = run(dataset, config)
 
 If you use this implementation in your research, please cite the original GENIE3 paper:
 
-```
-Huynh-Thu, V. A., Irrthum, A., Wehenkel, L., & Geurts, P. (2010).
-Inferring regulatory networks from expression data using tree-based methods.
-PloS one, 5(9), e12776.
+```bibtex
+@article{huynh-thuInferringRegulatoryNetworks2010,
+  title = {Inferring {{Regulatory Networks}} from {{Expression Data Using Tree-Based Methods}}},
+  author = {{Huynh-Thu}, V{\^a}n Anh and Irrthum, Alexandre and Wehenkel, Louis and Geurts, Pierre},
+  editor = {Isalan, Mark},
+  year = {2010},
+  month = sep,
+  journal = {PLoS ONE},
+  volume = {5},
+  number = {9},
+  pages = {e12776},
+  issn = {1932-6203},
+  doi = {10.1371/journal.pone.0012776},
+  urldate = {2024-09-23},
+  langid = {english},
+  keywords = {Gene Regulatory Networks}
+}
 ```
 
 ## License
