@@ -94,7 +94,7 @@ Example configuration file (`configs/extratrees.yaml`):
 data:
   gene_expressions_path: "data/gene_expression_data.tsv"
   transcription_factors_path: "data/transcription_factors.tsv" # If not provided, will use all genes as transcription factors
-  reference_network_path: "data/reference_network_data.tsv" # Can be omitted for inference
+  reference_network_path: "data/reference_network_data.tsv" # Can be empty if you want to run inference only
 
 regressor:
   name: "ExtraTreesRegressor" # Can be any of the supported regressors
@@ -102,18 +102,19 @@ regressor:
     n_estimators: 100
     random_state: 42
     max_features: 0.1
-    n_jobs: 8
   fit_params:
 ```
 
 ## Data Format
+
+The expected format of the data files. The header rows are expected to be present in the respective files.
 
 ### Gene Expression Data
 
 A tab-separated file with genes as columns, samples as rows, and gene expression values as entries:
 
 ```csv
-        Gene1   Gene2   Gene3   ...
+        Gene1   Gene2   Gene3   ... # Header row
 Sample1 0.5     1.2     0.8     ...
 Sample2 0.7     0.9     1.1     ...
 ...
@@ -124,7 +125,7 @@ Sample2 0.7     0.9     1.1     ...
 A tab-separated file with one column containing transcription factor names. The transcription factors are expected to be present in the columns of the gene expression data.
 
 ```csv
-TF
+transcription_factor # Header row
 Gene1
 Gene2
 ...
@@ -135,7 +136,7 @@ Gene2
 A tab-separated file with columns for transcription factors, target genes, and binary labels, indicating the presence of an edge between the transcription factor and the target gene:
 
 ```csv
-transcription_factor  target_gene  label
+transcription_factor  target_gene  label # Header row
 Gene1                 Gene2        1
 Gene1                 Gene3        0
 ...
