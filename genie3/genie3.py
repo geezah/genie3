@@ -48,7 +48,7 @@ def calculate_importances(
     regressor_type: str,
     regressor_init_params: Dict[str, Any],
     **fit_params: Dict[str, Any],
-) -> NDArray[np.float32]:
+) -> NDArray:
     # Get the number of genes and transcription factors
     num_genes = gene_expressions.shape[1]
     num_transcription_factors = len(transcription_factor_indices)
@@ -82,7 +82,7 @@ def calculate_importances(
 
 
 def rank_genes_by_importance(
-    importance_matrix: NDArray[np.float32],
+    importance_matrix: NDArray,
     transcription_factor_indices: List[int],
     gene_names: List[str],
 ) -> pd.DataFrame:
