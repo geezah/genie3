@@ -12,6 +12,7 @@ from .regressor import (
     RegressorFactory,
 )
 
+
 def run(
     dataset: GRNDataset, regressor_config: RegressorConfig
 ) -> pd.DataFrame:
@@ -52,6 +53,11 @@ def calculate_importances(
     # Get the number of genes and transcription factors
     num_genes = gene_expressions.shape[1]
     num_transcription_factors = len(transcription_factor_indices)
+
+    # Standardize data
+    gene_expressions = (
+        gene_expressions - gene_expressions.mean(axis=0)
+    ) / gene_expressions.std()
 
     # Initialize importance matrix
     importance_matrix = np.zeros(
@@ -107,19 +113,23 @@ def rank_genes_by_importance(
             tf_idx = transcription_factor_indices[j]
             target_idx = i
             importance = importance_matrix[i, j]
-            
+
             # Use gene names instead of indices
             tf_name = gene_names[tf_idx]
             target_name = gene_names[target_idx]
-            
-            rows.append({
-                "transcription_factor": tf_name,
-                "target_gene": target_name,
-                "importance": float(importance)
-            })
+
+            rows.append(
+                {
+                    "transcription_factor": tf_name,
+                    "target_gene": target_name,
+                    "importance": float(importance),
+                }
+            )
 
     # Convert to DataFrame and sort by importance
     predicted_network = pd.DataFrame(rows)
-    predicted_network = predicted_network.sort_values(by="importance", ascending=False)
-    
+    predicted_network = predicted_network.sort_values(
+        by="importance", ascending=False
+    )
+
     return predicted_network
