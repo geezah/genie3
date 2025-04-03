@@ -1,5 +1,9 @@
+ARG CUDA_VERSION=12.8.1
+ARG IMAGE_TYPE="runtime"
+ARG OS_TAG="ubuntu24.04"
+
 # Use the official NVIDIA CUDA image as the base
-FROM docker.io/nvidia/cuda:12.8.1-runtime-ubuntu24.04
+FROM docker.io/nvidia/cuda:${CUDA_VERSION}-${IMAGE_TYPE}-${OS_TAG}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates
@@ -11,7 +15,7 @@ ADD https://astral.sh/uv/0.6.11/install.sh /uv-installer.sh
 RUN sh /uv-installer.sh && rm /uv-installer.sh
 
 # Ensure the installed binary is on the `PATH`
-ENV PATH="/root/.local/bin/:$PATH" UV_HTTP_TIMEOUT="600"
+ENV PATH="/root/.local/bin/:$PATH"
 
 # Add working directory to docker
 ADD . /genie3
