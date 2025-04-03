@@ -1,14 +1,13 @@
 from typing import Dict, Type
 
-from .extratrees import ExtraTreesRegressor
-from .gradientboosting import (
-    GradientBoostingRegressor,
-)
-from .lightgbm import LGBMRegressor
 from .protocol import RegressorProtocol
-from .randomforest import (
+
+from .sklearn import (
+    ExtraTreesRegressor,
+    GradientBoostingRegressor,
     RandomForestRegressor,
 )
+from .xgboost import XGBGradientBoostingRegressor, XGBRandomForestRegressor
 
 
 class RegressorRegistry:
@@ -16,7 +15,8 @@ class RegressorRegistry:
         "RandomForestRegressor": RandomForestRegressor,
         "ExtraTreesRegressor": ExtraTreesRegressor,
         "GradientBoostingRegressor": GradientBoostingRegressor,
-        "LGBMRegressor": LGBMRegressor,
+        "XGBRandomForestRegressor": XGBRandomForestRegressor,
+        "XGBGradientBoostingRegressor": XGBGradientBoostingRegressor,
     }
 
     @classmethod

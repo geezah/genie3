@@ -4,5 +4,5 @@ data:
   reference_network_path: "local_data/processed/dream_five/net3_e-coli/reference_network_data.tsv"
 
 regressor:
-  name: "LGBMRegressor"
+  name: "XGBRandomForestRegressor"
   init_params:

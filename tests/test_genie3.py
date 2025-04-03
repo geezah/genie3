@@ -138,9 +138,7 @@ class TestGenie3:
         importance_matrix = calculate_importances(
             gene_expressions,
             tf_indices,
-            regressor_config.name,
-            regressor_config.init_params,
-            **regressor_config.fit_params
+            regressor_config,
         )
         
         # Check the shape of the importance matrix

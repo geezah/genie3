@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -19,9 +19,7 @@ def run(
     importance_scores = calculate_importances(
         dataset.gene_expressions.values,
         dataset._transcription_factor_indices,
-        regressor_config.name,
-        regressor_config.init_params,
-        **regressor_config.fit_params,
+        regressor_config
     )
     predicted_network = rank_genes_by_importance(
         importance_scores,
@@ -46,9 +44,7 @@ def partition_data(
 def calculate_importances(
     gene_expressions: NDArray,
     transcription_factor_indices: List[int],
-    regressor_type: str,
-    regressor_init_params: Dict[str, Any],
-    **fit_params: Dict[str, Any],
+    regressor_config : RegressorConfig
 ) -> NDArray:
     # Get the number of genes and transcription factors
     num_genes = gene_expressions.shape[1]
@@ -72,15 +68,15 @@ def calculate_importances(
         miniters=num_genes // 100,
     )
     for target_gene in progress_bar:
-        regressor = RegressorFactory.get(regressor_type)(
-            **regressor_init_params
+        regressor = RegressorFactory.get(regressor_config.name)(
+            regressor_config.init_params
         )
         X, y, input_genes = partition_data(
             gene_expressions,
             transcription_factor_indices,
             target_gene,
         )
-        regressor.fit(X, y, **fit_params)
+        regressor.fit(X, y, regressor_config.fit_params)
         importance_matrix[target_gene, input_genes] = (
             regressor.feature_importances
         )

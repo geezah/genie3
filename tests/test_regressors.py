@@ -7,7 +7,8 @@ from genie3.regressor import (
     RandomForestRegressor,
     ExtraTreesRegressor,
     GradientBoostingRegressor,
-    LGBMRegressor,
+    XGBGradientBoostingRegressor, 
+    XGBRandomForestRegressor
 )
 
 @pytest.fixture
@@ -25,7 +26,8 @@ class TestRegressorFactory:
         assert RegressorFactory.get("RandomForestRegressor") == RandomForestRegressor
         assert RegressorFactory.get("ExtraTreesRegressor") == ExtraTreesRegressor
         assert RegressorFactory.get("GradientBoostingRegressor") == GradientBoostingRegressor
-        assert RegressorFactory.get("LGBMRegressor") == LGBMRegressor
+        assert RegressorFactory.get("XGBRandomForestRegressor") == XGBRandomForestRegressor
+        assert RegressorFactory.get("XGBGradientBoostingRegressor") == XGBGradientBoostingRegressor
 
     def test_get_unknown_regressor(self):
         """Test that the factory raises an error for unknown regressor types."""
@@ -65,10 +67,10 @@ class TestConfigurationFactory:
         for regressor_class in RegressorFactory._regressors.values():
             
             # Create a regressor with the configuration
-            regressor = regressor_class(**regressor_class.DefaultConfiguration["init_params"])
+            regressor = regressor_class(regressor_class.DefaultConfiguration["init_params"])
             
             # Fit the regressor with the configuration
-            regressor.fit(X, y, **regressor_class.DefaultConfiguration["fit_params"])
+            regressor.fit(X, y, regressor_class.DefaultConfiguration["fit_params"])
             
             # Check that feature importances are available
             assert hasattr(regressor, "feature_importances")
@@ -102,7 +104,7 @@ class TestRegressors:
             "max_depth": 5,
             "random_state": 123,
         }
-        regressor = RandomForestRegressor(**custom_params)
+        regressor = RandomForestRegressor(custom_params)
         
         # Check that the parameters were passed to the underlying regressor
         for param, value in custom_params.items():
@@ -110,16 +112,13 @@ class TestRegressors:
         
         # Fit with custom fit parameters
         custom_fit_params = {"sample_weight": np.ones(len(y))}
-        regressor.fit(X, y, **custom_fit_params)
+        regressor.fit(X, y, custom_fit_params)
         
         # Feature importances should be available
         assert hasattr(regressor, "feature_importances")
     
     @pytest.mark.parametrize("regressor_class", [
         RandomForestRegressor,
-        ExtraTreesRegressor,
-        GradientBoostingRegressor,
-        LGBMRegressor
     ])
     def test_regressors(self, regressor_class, sample_data):
         """Test implemented regressors."""

@@ -6,11 +6,11 @@ from numpy.typing import NDArray
 class RegressorProtocol(Protocol):
     DefaultConfiguration: Dict[str, Dict[str, Any]]
 
-    def __init__(self, **init_params: Dict[str, Any]) -> None: ...
+    def __init__(self, init_params: Dict[str, Any]) -> None: ...
 
     def fit(
-        self, X: NDArray, y: NDArray, **fit_kwargs: Dict[str, Any]
-    ) -> Any: ...
+        self, X: NDArray, y: NDArray, fit_params: Dict[str, Any]
+    ) -> None: ...
 
     @property
     def feature_importances(self) -> NDArray:

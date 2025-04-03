@@ -1,5 +1,5 @@
 # Use the official NVIDIA CUDA image as the base
-FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
+FROM docker.io/nvidia/cuda:12.8.1-runtime-ubuntu24.04
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates
@@ -18,4 +18,4 @@ ADD . /genie3
 WORKDIR /genie3
 
 # Set up environment based on `pyproject.toml` 
-RUN uv sync --frozen --extra gpu
+RUN uv sync --frozen
