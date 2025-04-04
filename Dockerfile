@@ -1,5 +1,5 @@
 ARG CUDA_VERSION=12.8.1
-ARG IMAGE_TYPE="base"
+ARG IMAGE_TYPE="runtime"
 ARG OS_TAG="ubuntu24.04"
 
 # Use the official NVIDIA CUDA image as the base
