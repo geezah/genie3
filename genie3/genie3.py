@@ -1,25 +1,22 @@
 from typing import List, Tuple
 
-import numpy as np
+import cupy as cp
 import pandas as pd
-from numpy.typing import NDArray
+from cupy.typing import ArrayLike
 from tqdm.auto import tqdm
 
 from genie3.config import RegressorConfig
 from genie3.data import GRNDataset
 
-from .regressor import (
-    RegressorFactory,
-)
+from .regressor import RegressorFactory
 
 
 def run(
     dataset: GRNDataset, regressor_config: RegressorConfig
 ) -> pd.DataFrame:
     importance_scores = calculate_importances(
-        dataset.gene_expressions.values,
-        dataset._transcription_factor_indices,
-        regressor_config
+        dataset,
+        regressor_config,
     )
     predicted_network = rank_genes_by_importance(
         importance_scores,
@@ -29,35 +26,31 @@ def run(
     return predicted_network
 
 
-def partition_data(
-    gene_expressions: NDArray,
-    transcription_factor_indices: List[int],
-    target_gene: int,
-) -> Tuple[NDArray, NDArray, List[int]]:
-    # Remove target gene from regulator list and gene expression matrix
-    input_genes = [i for i in transcription_factor_indices if i != target_gene]
-    X = gene_expressions[:, input_genes]
-    y = gene_expressions[:, target_gene]
-    return X, y, input_genes
-
-
 def calculate_importances(
-    gene_expressions: NDArray,
-    transcription_factor_indices: List[int],
-    regressor_config : RegressorConfig
-) -> NDArray:
+    dataset: GRNDataset,
+    regressor_config: RegressorConfig,
+) -> ArrayLike:
+    gene_expressions: ArrayLike = dataset.gene_expressions.values
+
+    xp = cp.get_array_module(gene_expressions)
+
+    transcription_factor_indices: List = dataset._transcription_factor_indices
+    transcription_factor_indices: ArrayLike = xp.asarray(
+        transcription_factor_indices, dtype=xp.uint32
+    )
+
     # Get the number of genes and transcription factors
     num_genes = gene_expressions.shape[1]
     num_transcription_factors = len(transcription_factor_indices)
 
-    # Standardize data
-    gene_expressions = (
-        gene_expressions - gene_expressions.mean(axis=0)
-    ) / gene_expressions.std()
+    # Initialize the importance matrix
+    importance_matrix = xp.zeros(
+        (num_genes, num_transcription_factors), dtype=xp.float32
+    )
 
-    # Initialize importance matrix
-    importance_matrix = np.zeros(
-        (num_genes, num_transcription_factors), dtype=np.float32
+    # Standardize data
+    gene_expressions = (gene_expressions - gene_expressions.mean(axis=0)) / (
+        gene_expressions.std() + 1e-8
     )
 
     progress_bar = tqdm(
@@ -78,13 +71,13 @@ def calculate_importances(
         )
         regressor.fit(X, y, regressor_config.fit_params)
         importance_matrix[target_gene, input_genes] = (
-            regressor.feature_importances
+            regressor.feature_importances_
         )
     return importance_matrix
 
 
 def rank_genes_by_importance(
-    importance_matrix: NDArray,
+    importance_matrix: ArrayLike,
     transcription_factor_indices: List[int],
     gene_names: List[str],
 ) -> pd.DataFrame:
@@ -103,7 +96,6 @@ def rank_genes_by_importance(
     rows = []
     num_genes, num_transcription_factors = importance_matrix.shape
 
-    # Create list of regulator-target pairs with importance scores
     for i in range(num_genes):
         for j in range(num_transcription_factors):
             tf_idx = transcription_factor_indices[j]
@@ -121,11 +113,27 @@ def rank_genes_by_importance(
                     "importance": float(importance),
                 }
             )
-
     # Convert to DataFrame and sort by importance
     predicted_network = pd.DataFrame(rows)
     predicted_network = predicted_network.sort_values(
         by="importance", ascending=False
     )
-
     return predicted_network
+
+
+def partition_data(
+    gene_expressions: ArrayLike,
+    transcription_factor_indices: ArrayLike,
+    target_gene: int,
+) -> Tuple[ArrayLike, ArrayLike, ArrayLike]:
+    # Create a mask for transcription factors that are not the target gene
+    mask = transcription_factor_indices != target_gene
+
+    # Apply the mask to get input genes
+    input_genes = transcription_factor_indices[mask]
+
+    # Extract input features and target variable
+    X = gene_expressions[:, input_genes]
+    y = gene_expressions[:, target_gene]
+
+    return X, y, input_genes

@@ -48,6 +48,7 @@ class RegressorConfig(BaseModel):
         description="Parameters to fit the regressor with. Must comply with the regressor's API.",
     )
 
+
     @field_validator("name", mode="after")
     @classmethod
     def check_regressor_name(cls, value: str) -> str:
@@ -60,9 +61,13 @@ class RegressorConfig(BaseModel):
     @model_validator(mode="after")
     def set_default_params(self) -> Self:
         if not self.init_params:
-            self.init_params = RegressorFactory.get(self.name).DefaultConfiguration["init_params"]
+            self.init_params = RegressorFactory.get(
+                self.name
+            ).DefaultConfiguration["init_params"]
         if not self.fit_params:
-            self.fit_params = RegressorFactory.get(self.name).DefaultConfiguration["fit_params"]
+            self.fit_params = RegressorFactory.get(
+                self.name
+            ).DefaultConfiguration["fit_params"]
         return self
 
 

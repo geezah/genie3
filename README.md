@@ -158,8 +158,8 @@ class MyCustomRegressor(RegressorProtocol):
         
     def fit(self, X, y, **fit_params):
         # Fit your regressor
-        # Set feature_importances property
-        self.feature_importances = ...
+        # Set feature_importances_ property
+        self.feature_importances_ = ...
 
 # Register your regressor
 RegressorFactory.register("MyCustomRegressor", MyCustomRegressor)

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from pandas import DataFrame, Series
+import pandas as pd
 
 from .dataset import GRNDataset
 from .loading import (
@@ -16,18 +16,18 @@ def init_grn_dataset(
     transcription_factor_path: Optional[Path],
     reference_network_path: Optional[Path],
 ) -> GRNDataset:
-    gene_expressions: DataFrame = load_gene_expression_data(
+    gene_expressions: pd.DataFrame = load_gene_expression_data(
         gene_expressions_path
     )
     transcription_factor_names = None
     if transcription_factor_path is not None:
-        transcription_factor_names: Series = load_transcription_factor_data(
+        transcription_factor_names: pd.Series = load_transcription_factor_data(
             transcription_factor_path
         )
 
     reference_network = None
     if reference_network_path is not None:
-        reference_network: DataFrame = load_reference_network_data(
+        reference_network: pd.DataFrame = load_reference_network_data(
             reference_network_path
         )
     return GRNDataset(

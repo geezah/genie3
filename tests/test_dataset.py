@@ -43,7 +43,6 @@ class TestGRNDataset:
 
         assert dataset._gene_names == ["gene1", "gene2", "gene3"]
         assert list(dataset._transcription_factor_indices) == [0, 1]
-        
 
     def test_dataset_without_tf_names(
         self, valid_gene_expressions, valid_reference_network
@@ -104,7 +103,10 @@ class TestGRNDataset:
         invalid_reference_network = pd.DataFrame(
             {
                 "transcription_factor": ["gene1", "gene2"],
-                "target": ["gene2", "gene3"],  # Here, "target" should be named "target_gene"
+                "target": [
+                    "gene2",
+                    "gene3",
+                ],  # Here, "target" should be named "target_gene"
                 "label": [1, 0],
             }
         )
@@ -126,7 +128,10 @@ class TestGRNDataset:
             {
                 "transcription_factor": ["gene1", "gene2"],
                 "target_gene": ["gene2", "gene3"],
-                "label": [1, 2],  # "2" is an invalid label as we only accept labels in {0,1}
+                "label": [
+                    1,
+                    2,
+                ],  # "2" is an invalid label as we only accept labels in {0,1}
             }
         )
 
