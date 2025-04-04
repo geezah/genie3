@@ -1,5 +1,6 @@
-try: 
-    from cuml.accel import install # type:ignore
+try:
+    from cuml.accel import install  # type: ignore
+
     install()
 except ImportError:
     pass
@@ -44,7 +45,6 @@ class ExtraTreesRegressor(RegressorProtocol):
     def __init__(
         self,
         init_params: Optional[Dict[str, Any]] = None,
-        use_gpu: bool = False,
     ) -> None:
         self.regressor: _ExtraTreesRegressor = _ExtraTreesRegressor(
             **init_params
@@ -73,7 +73,6 @@ class RandomForestRegressor(RegressorProtocol):
     def __init__(
         self,
         init_params: Optional[Dict[str, Any]] = None,
-        use_gpu: bool = False,
     ) -> None:
         self.regressor: _RandomForestRegressor = _RandomForestRegressor(
             **init_params
