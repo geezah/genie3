@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from genie3.data.dataset import GRNDataset
+from genie3.data import GRNDataset
 
 
 @pytest.fixture

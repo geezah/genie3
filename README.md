@@ -44,7 +44,7 @@ The following example shows how to use the package to infer a gene regulatory ne
 
 ```python
 import pandas as pd
-from genie3.data.dataset import GRNDataset
+from genie3.data import GRNDataset
 from genie3.config import RegressorConfig
 from genie3.genie3 import run
 from genie3.eval import prepare_evaluation, run_evaluation, Results

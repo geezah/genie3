@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, List, Optional
 
 import pandas as pd
@@ -176,25 +177,84 @@ class GRNDataset(BaseModel):
         return self
 
 
-if __name__ == "__main__":
-    gene_expressions = pd.DataFrame(
-        {
-            "gene1": [1, 2, 3],
-            "gene2": [4, 5, 6],
-            "gene3": [7, 8, 9],
-        },
+def load_gene_expression_data(
+    gene_expression_path: Path,
+) -> pd.DataFrame:
+    """
+    Load gene expression data from a file.
+
+    Args:
+        gene_expression_path (Path): Path to the gene expression data file.
+
+    Returns:
+        pd.DataFrame: Gene expression data.
+    """
+    return pd.read_csv(gene_expression_path, sep="\t", header=0)
+
+
+def load_transcription_factor_data(
+    transcription_factor_path: Path,
+) -> pd.Series:
+    """
+    Load transcription factor data from a file.
+
+    Args:
+        transcription_factor_path (Path): Path to the transcription factor data file.
+
+    Returns:
+        pd.Series: Transcription factor data.
+    """
+    transcription_factors: pd.Series = pd.read_csv(
+        transcription_factor_path, sep="\t", header=0
+    ).squeeze()
+    return transcription_factors
+
+
+def load_reference_network_data(reference_network_path: Path) -> pd.DataFrame:
+    """
+    Load reference network data from a given file path.
+    This function reads a tab-separated values (TSV) file containing reference network data
+    and returns it as a pandas DataFrame. The file is expected to have the following columns:
+    "transcription_factor", "target_gene", and "label".
+    Args:
+        reference_network_path (Path): The file path to the reference network data.
+    Returns:
+        pd.DataFrame: A DataFrame containing the reference network data.
+    """
+    df: pd.DataFrame = pd.read_csv(reference_network_path, sep="\t", header=0)
+    return df
+
+
+def init_grn_dataset(
+    gene_expressions_path: Path,
+    transcription_factor_path: Optional[Path],
+    reference_network_path: Optional[Path],
+) -> GRNDataset:
+    gene_expressions: pd.DataFrame = load_gene_expression_data(
+        gene_expressions_path
     )
-    transcription_factor_names = pd.Series(["gene1", "gene2"])
-    reference_network = pd.DataFrame(
-        {
-            "target_gene": ["gene3", "gene1"],
-            "transcription_factor": ["gene2", "gene1"],
-            "label": [1, 0],
-        }
-    )
-    dataset = GRNDataset(
+    transcription_factor_names = None
+    if transcription_factor_path is not None:
+        transcription_factor_names: pd.Series = load_transcription_factor_data(
+            transcription_factor_path
+        )
+
+    reference_network = None
+    if reference_network_path is not None:
+        reference_network: pd.DataFrame = load_reference_network_data(
+            reference_network_path
+        )
+    return GRNDataset(
         gene_expressions=gene_expressions,
         transcription_factor_names=transcription_factor_names,
         reference_network=reference_network,
     )
-    print(dataset._gene_names)
+
+
+__all__ = [
+    "GRNDataset",
+    "init_grn_dataset",
+    "load_gene_expression_data",
+    "load_transcription_factor_data",
+    "load_reference_network_data",
+]

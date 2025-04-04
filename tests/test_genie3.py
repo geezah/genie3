@@ -9,7 +9,7 @@ from genie3.genie3 import (
     calculate_importances,
     rank_genes_by_importance,
 )
-from genie3.data.dataset import GRNDataset
+from genie3.data import GRNDataset
 from genie3.config import RegressorConfig
 
 
@@ -40,7 +40,6 @@ def regressor_config():
         fit_params={},
     )
 
-
 class TestGenie3:
     def test_partition_data(self):
         """Test the partition_data function."""
@@ -67,7 +66,7 @@ class TestGenie3:
         # Check that y contains the target gene expression
         assert np.array_equal(y, gene_expressions[:, target_gene])
 
-    def test_rank_genes_by_importance(self):
+    def test_rank_genes_by_importance(self, sample_dataset):
         """Test the rank_genes_by_importance function."""
         importance_matrix = np.array(
             [
@@ -78,11 +77,8 @@ class TestGenie3:
             dtype=np.float32,
         )
 
-        tf_indices = [0, 1]
-        gene_names = ["gene1", "gene2", "gene3"]
-
         predicted_network = rank_genes_by_importance(
-            importance_matrix, tf_indices, gene_names
+            sample_dataset, importance_matrix
         )
 
         # Check that the result is a DataFrame with the expected columns
@@ -148,9 +144,8 @@ class TestGenie3:
         # Check that the functions were called with correct arguments
         mock_calculate.assert_called_once()
         mock_rank.assert_called_once_with(
+            sample_dataset,
             mock_importance_matrix,
-            sample_dataset._transcription_factor_indices,
-            sample_dataset._gene_names,
         )
 
         # Check that the result is the predicted network

@@ -1,11 +1,13 @@
+from typing import Any, Callable, Dict, Optional, Protocol, Type
+
+from cupy.typing import ArrayLike
+
 try:
     from cuml.accel import install  # type: ignore
 
     install()
 except ImportError:
     pass
-
-from typing import Any, Dict, Optional
 
 from numpy.typing import NDArray
 from sklearn.ensemble import (
@@ -15,7 +17,31 @@ from sklearn.ensemble import (
     RandomForestRegressor as _RandomForestRegressor,
 )
 
-from .protocol import RegressorProtocol
+
+class RegressorProtocol(Protocol):
+    DefaultConfiguration: Dict[str, Dict[str, Any]]
+
+    def __init__(
+        self,
+        init_params: Optional[Dict[str, Any]] = None,
+    ) -> None: ...
+
+    def fit(
+        self, X: ArrayLike, y: ArrayLike, fit_params: Dict[str, Any]
+    ) -> None: ...
+
+    @property
+    def feature_importances_(self) -> ArrayLike:
+        if not hasattr(self, "_feature_importances_"):
+            raise ValueError(
+                "Model has not been fitted yet. Therefore, no feature importances available."
+            )
+        return self._feature_importances_
+
+    @feature_importances_.setter
+    def feature_importances_(self, value: ArrayLike) -> None:
+        self._feature_importances_ = value
+
 
 DefaultExtraTreesConfiguration = {
     "init_params": {
@@ -93,3 +119,42 @@ class RandomForestRegressor(RegressorProtocol):
         )
         self.regressor.fit(X, y, **fit_params)
         self.feature_importances_ = self.regressor.feature_importances_
+
+
+class RegressorRegistry:
+    _regressors: Dict[str, Type[RegressorProtocol]] = {
+        "RandomForestRegressor": RandomForestRegressor,
+        "ExtraTreesRegressor": ExtraTreesRegressor,
+    }
+
+    @classmethod
+    def register(
+        cls, name: Optional[str] = None
+    ) -> Callable[[Type[RegressorProtocol]], Type[RegressorProtocol]]:
+        """Decorator to register a new regressor class."""
+
+        def decorator(
+            regressor_class: Type[RegressorProtocol],
+        ) -> Type[RegressorProtocol]:
+            key = name or regressor_class.__name__
+            cls._regressors[key] = regressor_class
+            return regressor_class
+
+        return decorator
+
+    @classmethod
+    def get(cls, name: str) -> Type[RegressorProtocol]:
+        """Retrieve a registered regressor class by name."""
+        if name not in cls._regressors:
+            raise ValueError(f"Unknown regressor type: {name}")
+        return cls._regressors[name]
+
+    @classmethod
+    def list(cls) -> Dict[str, Type[RegressorProtocol]]:
+        return dict(cls._regressors)
+
+
+# Replace the dictionary with the registry
+RegressorFactory = RegressorRegistry
+
+__all__ = ["RegressorFactory"]
