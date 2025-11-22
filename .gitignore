@@ -1,0 +1,10 @@
+results/
+__pycache__
+credentials.conf
+*_data/
+dist
+wandb
+.venv
+.gradio
+.pytest_cache
+.ruff_cache

@@ -1,0 +1,8 @@
+data:
+  gene_expressions_path: "local_data/processed/dream_five/net1_in-silico/gene_expression_data.tsv"
+  transcription_factors_path: "local_data/processed/dream_five/net1_in-silico/transcription_factors.tsv"
+  reference_network_path: "local_data/processed/dream_five/net1_in-silico/reference_network_data.tsv"
+
+regressor:
+  name: "CuRandomForestRegressor"
+  init_params:
