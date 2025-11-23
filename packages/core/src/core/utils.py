@@ -6,7 +6,7 @@ import yaml
 from matplotlib.figure import Figure
 from numpy.typing import NDArray
 
-from genie3.config import GENIE3Config
+from .config import GENIE3Config
 
 
 def write_config(config: GENIE3Config, output_dir: Path) -> None:

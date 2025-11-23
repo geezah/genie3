@@ -8,3 +8,4 @@ wandb
 .gradio
 .pytest_cache
 .ruff_cache
+*.egg-info/

@@ -1,0 +1,11 @@
+[project]
+name = "federated"
+version = "0.1.0"
+description = "Federated GENIE3"
+readme = "README.md"
+authors = [
+    { name = "geezah", email = "emre.gezer@hotmail.de" }
+]
+dependencies = [
+    "core"
+]

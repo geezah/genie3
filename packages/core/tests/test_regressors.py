@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from genie3.regressor import (
+from core.regressor import (
     RegressorRegistry,
 )
 
@@ -48,9 +48,7 @@ def all_regressor_classes():
 class TestRegressorRegistry:
     """Tests related to the regressor registry functionality."""
 
-    def test_get_unknown_regressor(
-        self, regressor_registry: RegressorRegistry
-    ):
+    def test_get_unknown_regressor(self, regressor_registry: RegressorRegistry):
         """Test that the registry raises an error for unknown regressor types."""
         with pytest.raises(
             ValueError,
@@ -84,8 +82,7 @@ class TestRegressorRegistry:
 
         # Verify registration
         assert (
-            getattr(RegressorRegistry, registry_name).get(test_name)
-            == mock_regressor
+            getattr(RegressorRegistry, registry_name).get(test_name) == mock_regressor
         )
         assert RegressorRegistry.get(test_name) == mock_regressor
 
@@ -97,15 +94,15 @@ class TestRegressorRegistry:
         """Test that the GPU availability check works correctly."""
         # This test always passes - it just verifies the method runs without error
         is_available = RegressorRegistry.GPU.available()
-        assert isinstance(
-            is_available, bool
-        ), "available() should return a boolean value"
+        assert isinstance(is_available, bool), (
+            "available() should return a boolean value"
+        )
 
         # If GPU is available, ensure there are GPU regressors registered
         if is_available:
-            assert (
-                len(RegressorRegistry.GPU.list()) > 0
-            ), "GPU is available but no GPU regressors are registered"
+            assert len(RegressorRegistry.GPU.list()) > 0, (
+                "GPU is available but no GPU regressors are registered"
+            )
 
 
 class TestRegressorConfigurations:
@@ -114,17 +111,13 @@ class TestRegressorConfigurations:
     def test_configuration_structure(self, all_regressor_classes):
         """Test that all regressors have properly structured configurations."""
         for name, regressor_class in all_regressor_classes.items():
-            assert hasattr(
-                regressor_class, "DefaultConfiguration"
-            ), f"{name} has no DefaultConfiguration"
+            assert hasattr(regressor_class, "DefaultConfiguration"), (
+                f"{name} has no DefaultConfiguration"
+            )
 
             config = regressor_class.DefaultConfiguration
-            assert (
-                "init_params" in config
-            ), f"{name} configuration missing init_params"
-            assert (
-                "fit_params" in config
-            ), f"{name} configuration missing fit_params"
+            assert "init_params" in config, f"{name} configuration missing init_params"
+            assert "fit_params" in config, f"{name} configuration missing fit_params"
 
     def test_configuration_validity(self, regressor_registry, sample_data):
         """Test that configurations can create working regressors."""
@@ -135,18 +128,16 @@ class TestRegressorConfigurations:
             regressor = regressor_class(
                 regressor_class.DefaultConfiguration["init_params"]
             )
-            regressor.fit(
-                X, y, regressor_class.DefaultConfiguration["fit_params"]
-            )
+            regressor.fit(X, y, regressor_class.DefaultConfiguration["fit_params"])
 
             # Verify feature importances
             importances = regressor.feature_importances_
-            assert importances.shape == (
-                X.shape[1],
-            ), f"{name} has wrong feature importances shape"
-            assert np.isclose(
-                np.sum(importances), 1.0
-            ), f"{name} feature importances don't sum to 1"
+            assert importances.shape == (X.shape[1],), (
+                f"{name} has wrong feature importances shape"
+            )
+            assert np.isclose(np.sum(importances), 1.0), (
+                f"{name} feature importances don't sum to 1"
+            )
 
 
 class TestRegressorImplementations:
@@ -156,24 +147,18 @@ class TestRegressorImplementations:
         """Test that all regressors comply with the required interface."""
         for name, regressor_class in regressor_registry.list().items():
             # Check required class attributes
-            assert hasattr(
-                regressor_class, "fit"
-            ), f"{name} missing fit method"
-            assert hasattr(
-                regressor_class, "feature_importances_"
-            ), f"{name} missing feature_importances_"
-            assert hasattr(
-                regressor_class, "DefaultConfiguration"
-            ), f"{name} missing DefaultConfiguration"
+            assert hasattr(regressor_class, "fit"), f"{name} missing fit method"
+            assert hasattr(regressor_class, "feature_importances_"), (
+                f"{name} missing feature_importances_"
+            )
+            assert hasattr(regressor_class, "DefaultConfiguration"), (
+                f"{name} missing DefaultConfiguration"
+            )
 
             # Create instance and check instance attributes
             regressor = regressor_class()
-            assert hasattr(
-                regressor, "fit"
-            ), f"{name} instance missing fit method"
+            assert hasattr(regressor, "fit"), f"{name} instance missing fit method"
 
             # Check that feature_importances_ raises error when not fitted
-            with pytest.raises(
-                ValueError, match="Model has not been fitted yet"
-            ):
+            with pytest.raises(ValueError, match="Model has not been fitted yet"):
                 _ = regressor.feature_importances_

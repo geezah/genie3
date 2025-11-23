@@ -3,14 +3,14 @@ import numpy as np
 import pandas as pd
 from unittest.mock import patch
 
-from genie3.genie3 import (
+from core.genie3 import (
     run,
     partition_data,
     calculate_importances,
     rank_genes_by_importance,
 )
-from genie3.data import GRNDataset
-from genie3.config import RegressorConfig
+from core.data import GRNDataset
+from core.config import RegressorConfig
 
 
 @pytest.fixture
@@ -54,9 +54,7 @@ class TestGenie3:
         tf_indices = np.array([0, 1, 2])
         target_gene = 1
 
-        X, y, input_genes = partition_data(
-            gene_expressions, tf_indices, target_gene
-        )
+        X, y, input_genes = partition_data(gene_expressions, tf_indices, target_gene)
 
         # Check that target gene is removed from input genes
         assert np.array_equal(input_genes, np.array([0, 2]))
@@ -78,9 +76,7 @@ class TestGenie3:
             dtype=np.float32,
         )
 
-        predicted_network = rank_genes_by_importance(
-            sample_dataset, importance_matrix
-        )
+        predicted_network = rank_genes_by_importance(sample_dataset, importance_matrix)
 
         # Check that the result is a DataFrame with the expected columns
         assert isinstance(predicted_network, pd.DataFrame)
@@ -110,11 +106,9 @@ class TestGenie3:
         assert predicted_network["target_gene"].iloc[1] == "gene2"
         assert np.isclose(predicted_network["importance"].iloc[1], 0.5)
 
-    @patch("genie3.genie3.calculate_importances")
-    @patch("genie3.genie3.rank_genes_by_importance")
-    def test_run(
-        self, mock_rank, mock_calculate, sample_dataset, regressor_config
-    ):
+    @patch("core.genie3.calculate_importances")
+    @patch("core.genie3.rank_genes_by_importance")
+    def test_run(self, mock_rank, mock_calculate, sample_dataset, regressor_config):
         """Test the run function with mocked dependencies."""
         # Use the fixtures properly instead of calling them directly
 
@@ -152,9 +146,7 @@ class TestGenie3:
         # Check that the result is the predicted network
         assert result is mock_predicted_network
 
-    def test_calculate_importances_integration(
-        self, sample_dataset, regressor_config
-    ):
+    def test_calculate_importances_integration(self, sample_dataset, regressor_config):
         """Integration test for calculate_importances with a real regressor."""
         # Use a small number of estimators for faster testing
         regressor_config.init_params["n_estimators"] = 5
