@@ -6,7 +6,8 @@ readme = "README.md"
 requires-python = ">=3.13, <3.14"
 dependencies = [
     "core",
-    "federated"
+    "federated",
+    "pyyaml>=6.0.3",
 ]
 
 classifiers = [
@@ -23,6 +24,9 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
 ]
+
+[tool.uv]
+override-dependencies = ["click>=8.1"]
 
 [tool.uv.sources]            
 core = { workspace = true }

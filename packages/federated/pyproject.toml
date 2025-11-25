@@ -7,5 +7,6 @@ authors = [
     { name = "geezah", email = "emre.gezer@hotmail.de" }
 ]
 dependencies = [
-    "core"
+    "core",
+    "featurecloud>=0.1.0",
 ]
