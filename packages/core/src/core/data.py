@@ -11,12 +11,12 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-try:
+from .regressor import CUDA_AVAILABLE
+
+if CUDA_AVAILABLE:
     from cudf.pandas import install
 
     install()
-except ImportError:
-    pass
 import pandas as pd  # noqa : F401
 
 

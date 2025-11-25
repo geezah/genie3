@@ -5,8 +5,8 @@ import numpy as np
 from cupy.typing import ArrayLike
 from tqdm.auto import tqdm
 
-from genie3.config import RegressorConfig
-from genie3.data import GRNDataset
+from .config import RegressorConfig
+from .data import GRNDataset
 
 from .regressor import RegressorRegistry, CUDA_AVAILABLE
 

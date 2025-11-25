@@ -1,6 +1,6 @@
 import pytest
 import pandas as pd
-from genie3.data import GRNDataset
+from core.data import GRNDataset
 
 
 @pytest.fixture
@@ -111,9 +111,7 @@ class TestGRNDataset:
             }
         )
 
-        with pytest.raises(
-            ValueError, match="missing the following required columns"
-        ):
+        with pytest.raises(ValueError, match="missing the following required columns"):
             GRNDataset(
                 gene_expressions=valid_gene_expressions,
                 transcription_factor_names=valid_tf_names,
@@ -157,9 +155,7 @@ class TestGRNDataset:
             }
         )
 
-        with pytest.raises(
-            ValueError, match="not found in gene expressions columns"
-        ):
+        with pytest.raises(ValueError, match="not found in gene expressions columns"):
             GRNDataset(
                 gene_expressions=valid_gene_expressions,
                 transcription_factor_names=valid_tf_names,
@@ -181,9 +177,7 @@ class TestGRNDataset:
             }
         )
 
-        with pytest.raises(
-            ValueError, match="not in transcription_factor_names"
-        ):
+        with pytest.raises(ValueError, match="not in transcription_factor_names"):
             GRNDataset(
                 gene_expressions=valid_gene_expressions,
                 transcription_factor_names=valid_tf_names,

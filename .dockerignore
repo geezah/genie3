@@ -1,0 +1,8 @@
+results/
+__pycache__
+.pytest_cache
+.ruff_cache
+credentials.conf
+*_data/
+dist
+.venv

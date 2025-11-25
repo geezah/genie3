@@ -4,12 +4,12 @@ from pathlib import Path
 from typer import Typer
 from yaml import safe_load
 
-from genie3.config import GENIE3Config
-from genie3.data import init_grn_dataset
-from genie3.eval import prepare_evaluation, run_evaluation
-from genie3.genie3 import run
-from genie3.plot import plot_precision_recall_curve, plot_roc_curve
-from genie3.utils import (
+from core.config import GENIE3Config
+from core.data import init_grn_dataset
+from core.eval import prepare_evaluation, run_evaluation
+from core.genie3 import run
+from core.plot import plot_precision_recall_curve, plot_roc_curve
+from core.utils import (
     write_results_full_pipeline,
     write_results_inference_only,
 )

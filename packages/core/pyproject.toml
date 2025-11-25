@@ -1,0 +1,46 @@
+[project]
+name = "core"
+version = "0.1.0"
+description = "An implementation of GENIE3 (GEne Network Inference with Ensemble of trees) with optional GPU acceleration."
+readme = "README.md"
+
+dependencies = [
+    "cupy-cuda12x>=13.4.1, <14",
+    "loguru>=0.7.3, <1",
+    "numpy>=1.26.4, <2",
+    "pandas>=2.2.3, <3",
+    "pydantic>=2.11.4, <3",
+    "scikit-learn>=1.6.1, <2",
+    "seaborn>=0.13.2, <1",
+    "tqdm>=4.67.1, <5",
+]
+
+[project.optional-dependencies]
+gpu = [
+    "cudf-cu12==25.10.*",
+    "cuml-cu12==25.10.*",
+]
+
+[tool.uv.sources]
+cuml-cu12 = [
+  { index = "nvidia", extra = "gpu"}
+]
+cudf-cu12 = [
+  { index = "nvidia", extra = "gpu"}
+]
+
+[[tool.uv.index]]
+name = "nvidia"
+url = "https://pypi.nvidia.com/"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.2.0",
+    "pytest==8.3.*",
+    "ruff>=0.14.2",
+    "typer>=0.12.5",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.11,<0.10.0"]
+build-backend = "uv_build"

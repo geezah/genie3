@@ -8,3 +8,6 @@ wandb
 .gradio
 .pytest_cache
 .ruff_cache
+*.egg-info/
+controller_data
+cufile*
