@@ -10,3 +10,4 @@ wandb
 .ruff_cache
 *.egg-info/
 controller_data
+cufile*
