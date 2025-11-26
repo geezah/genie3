@@ -5,7 +5,7 @@ description = "An implementation of GENIE3 (GEne Network Inference with Ensemble
 readme = "README.md"
 
 dependencies = [
-    "cupy-cuda12x>=13.4.1, <14",
+    "cupy-cuda12x>=13.6.0, <14; extra != 'cu13'",
     "loguru>=0.7.3, <1",
     "numpy>=1.26.4, <2",
     "pandas>=2.2.3, <3",
@@ -16,17 +16,36 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-gpu = [
+cu13 = [
+    "cupy-cuda13x>=13.6.0, <14",
+    "cudf-cu13==25.10.*",
+    "cuml-cu13==25.10.*",
+]
+cu12 = [
     "cudf-cu12==25.10.*",
     "cuml-cu12==25.10.*",
 ]
 
+[tool.uv]
+conflicts = [
+    [
+      { extra = "cu13" },
+      { extra = "cu12" },
+    ],
+]
+
 [tool.uv.sources]
+cuml-cu13 = [
+  { index = "nvidia", extra = "cu13"}
+]
+cudf-cu13 = [
+  { index = "nvidia", extra = "cu13"}
+]
 cuml-cu12 = [
-  { index = "nvidia", extra = "gpu"}
+  { index = "nvidia", extra = "cu12"}
 ]
 cudf-cu12 = [
-  { index = "nvidia", extra = "gpu"}
+  { index = "nvidia", extra = "cu12"}
 ]
 
 [[tool.uv.index]]
@@ -42,5 +61,5 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.9.11,<0.10.0"]
+requires = ["uv_build>=0.9.12,<0.10.0"]
 build-backend = "uv_build"
