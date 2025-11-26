@@ -41,10 +41,8 @@ class InitialState(AppState):
 
         # Get the config path
         client_config_path = INPUT_DIR_PATH / "client.yaml"
-        server_config_path = INPUT_DIR_PATH / "server.yaml"
 
         self.log(f"Client Config path: {client_config_path}")
-        self.log(f"Server Config path: {server_config_path}")
 
         with open(client_config_path, "r") as f:
             participant_config_dict: Dict[str, Any] = yaml.safe_load(f)
