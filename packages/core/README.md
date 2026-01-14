@@ -1,6 +1,6 @@
 # GENIE3: Gene Regulatory Network Inference with Ensemble of Trees
 
-GENIE3 (GEne Network Inference with Ensemble of trees) is an algorithmic framework for inferring gene regulatory networks from gene expression data with tree-based ensemble methods. This implementation provides a flexible, efficient, and user-friendly way to reconstruct gene regulatory networks.
+GENIE3 (GEne Network Inference with Ensemble of trees) is an algorithmic framework for inferring gene regulatory networks from gene expression data with tree-based ensemble methods. This implementation provides a flexible, efficient, and user-friendly way to reconstruct gene regulatory networks with optional GPU acceleration.
 
 ## Overview
 
@@ -8,37 +8,26 @@ GENIE3 treats the problem of network inference as a feature selection problem: f
 
 ## Features
 
+- **GPU Acceleration**: Optional CUDA support for faster computation with cuDF, cuML, and CuPy (CUDA 12.x or 13.x)
+
 - **Multiple Regressor Support**: Includes implementations for various tree-based ensemble methods:
-  - Random Forest
-  - Extra Trees
-  - Gradient Boosting
-  - LightGBM
+  - Random Forest (CPU & GPU)
+  - Extra Trees (CPU only)
 
 - **Comprehensive Evaluation**: Built-in metrics for evaluating inferred networks:
   - AUROC (Area Under the Receiver Operating Characteristic curve)
   - AUPRC (Area Under the Precision-Recall Curve)
   - Visualization tools for ROC and PR curves
 
-- **Rigorous Data Handling**: Rigorous data validation via pydantic
+- **Rigorous Data Handling**: Rigorous data validation via Pydantic
 
 - **Experiment Tracking**: Tools for logging experiments and results
 
 ## Installation
 
-### Standard Installation
+This package is part of the GENIE3 monorepo. See the [main repository README](../../README.md) for installation instructions.
 
-This package requires [uv](https://docs.astral.sh/uv/getting-started/installation/) to be installed. When this is done, the package and the environment can be set up with the following commands:
-
-```bash
-# Clone the repository
-git clone https://github.com/geezah/genie3.git
-cd genie3
-
-# Install the package
-uv sync
-```
-
-### Basic Usage
+## Basic Usage
 
 The following example shows how to use the package to infer a gene regulatory network from gene expression data and transcription factors.
 
@@ -76,28 +65,27 @@ y_preds, y_true = prepare_evaluation(
         predicted_network, grn_dataset.reference_network
     )
 results : Results = run_evaluation(y_preds, y_true)
-
-
 ```
-
-### Using the CLI
-
-You can also run GENIE3 using the provided CLI. This CLI can be used for inference only as well as for evaluation against a reference network. The following command will run GENIE3 with the configuration file `configs/extratrees.yaml`:
+You can also run GENIE3 using the [provided CLI](../../scripts/local_app.py)
+This CLI can be used for inference only as well as for evaluation against a reference network.
+From the repository's root directory, executing the following command runs GENIE3 with the configuration specified in [`randomforest.yaml`](../../configs/randomforest.yaml):
 
 ```bash
-python scripts/local_app.py configs/extratrees.yaml
+uv run python scripts/local_app.py configs/randomforest.yaml
 ```
 
-Example configuration file (`configs/extratrees.yaml`):
+## Configuration Format
+
+The configuration is expected to adhere to the following structure:
 
 ```yaml
 data:
-  gene_expressions_path: "data/gene_expression_data.tsv"
+  gene_expressions_path: "data/gene_expression_data.tsv" # Required
   transcription_factors_path: "data/transcription_factors.tsv" # If not provided, will use all genes as transcription factors
   reference_network_path: "data/reference_network_data.tsv" # Can be empty if you want to run inference only
 
 regressor:
-  name: "ExtraTreesRegressor" # Can be any of the supported regressors
+  name: "ExtraTreesRegressor" # Supported regressors: ['ExtraTreesRegressor', RandomForestRegressor', 'CuRandomForestRegressor']
   init_params:
     n_estimators: 100
     random_state: 42
@@ -107,16 +95,16 @@ regressor:
 
 ## Data Format
 
-The expected format of the data files. The header rows are expected to be present in the respective files.
+The expected format of the data files. Note that the header rows are expected to be present in the respective files.
 
 ### Gene Expression Data
 
 A tab-separated file with genes as columns, samples as rows, and gene expression values as entries:
 
-```csv
-        Gene1   Gene2   Gene3   ... # Header row
-Sample1 0.5     1.2     0.8     ...
-Sample2 0.7     0.9     1.1     ...
+```tsv
+Gene1   Gene2   Gene3   ... # Header row ()
+0.5     1.2     0.8     ...
+0.7     0.9     1.1     ...
 ...
 ```
 
@@ -124,7 +112,7 @@ Sample2 0.7     0.9     1.1     ...
 
 A tab-separated file with one column containing transcription factor names. The transcription factors are expected to be present in the columns of the gene expression data.
 
-```csv
+```tsv
 transcription_factor # Header row
 Gene1
 Gene2
@@ -135,7 +123,7 @@ Gene2
 
 A tab-separated file with columns for transcription factors, target genes, and binary labels, indicating the presence of an edge between the transcription factor and the target gene:
 
-```csv
+```tsv
 transcription_factor  target_gene  label # Header row
 Gene1                 Gene2        1
 Gene1                 Gene3        0
@@ -144,7 +132,7 @@ Gene1                 Gene3        0
 
 ## Advanced Usage
 
-### Custom Regressors
+### Implementing Custom Regressors
 
 You can extend GENIE3 with custom regressors by implementing the `RegressorProtocol` interface:
 
@@ -193,6 +181,29 @@ config = RegressorConfig(
 predicted_network = run(dataset, config)
 ```
 
+## Package Structure
+
+```
+packages/core/
+├── src/core/
+│   ├── __init__.py
+│   ├── config.py        # Configuration models
+│   ├── data.py          # Dataset handling and validation
+│   ├── eval.py          # Evaluation metrics and visualization
+│   ├── genie3.py        # Main GENIE3 algorithm
+│   ├── plot.py          # Plotting utilities
+│   ├── regressor.py     # Regressor registry and protocols
+│   └── utils.py         # Utility functions
+├── tests/               # Unit tests
+├── pyproject.toml       # Package configuration
+└── README.md           # This file
+```
+
+## Related Resources
+
+- [Main Repository README](../../README.md)
+- [Federated GENIE3 Package](../federated/README.md) - For privacy-preserving federated learning
+
 ## Citation
 
 If you use this implementation in your research, please cite the original GENIE3 paper:
@@ -219,7 +230,3 @@ If you use this implementation in your research, please cite the original GENIE3
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
