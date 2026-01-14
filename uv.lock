@@ -2,15 +2,17 @@ version = 1
 revision = 3
 requires-python = "==3.13.*"
 resolution-markers = [
-    "platform_machine == 'aarch64' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
-    "platform_machine == 'x86_64' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
-    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
-    "platform_machine == 'aarch64' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
-    "platform_machine == 'x86_64' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
-    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
-    "extra != 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
+    "platform_machine == 'aarch64' and extra != 'extra-4-core-cpu' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
+    "platform_machine == 'x86_64' and extra != 'extra-4-core-cpu' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and extra != 'extra-4-core-cpu' and extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13'",
+    "platform_machine == 'aarch64' and extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
+    "platform_machine == 'x86_64' and extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
+    "platform_machine != 'aarch64' and platform_machine != 'x86_64' and extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
+    "extra == 'extra-4-core-cpu' and extra != 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
+    "extra != 'extra-4-core-cpu' and extra != 'extra-4-core-cu12' and extra != 'extra-4-core-cu13'",
 ]
 conflicts = [[
+    { package = "core", extra = "cpu" },
     { package = "core", extra = "cu12" },
     { package = "core", extra = "cu13" },
 ]]
@@ -107,7 +109,7 @@ name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b9/2e/0090cbf739cee7d23781ad4b89a9894a41538e4fcf4c31dcdd705b78eb8b/click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a", size = 226593, upload-time = "2024-12-21T18:38:44.339Z" }
 wheels = [
@@ -170,7 +172,6 @@ name = "core"
 version = "0.1.0"
 source = { editable = "packages/core" }
 dependencies = [
-    { name = "cupy-cuda12x" },
     { name = "loguru" },
     { name = "numpy" },
     { name = "pandas" },
@@ -181,6 +182,9 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
+cpu = [
+    { name = "cupy-cuda12x" },
+]
 cu12 = [
     { name = "cudf-cu12" },
     { name = "cuml-cu12" },
@@ -205,7 +209,7 @@ requires-dist = [
     { name = "cudf-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
     { name = "cuml-cu12", marker = "extra == 'cu12'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu12" } },
     { name = "cuml-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
-    { name = "cupy-cuda12x", specifier = ">=13.6.0,<14" },
+    { name = "cupy-cuda12x", marker = "extra == 'cpu'", specifier = ">=13.6.0,<14" },
     { name = "cupy-cuda13x", marker = "extra == 'cu13'", specifier = ">=13.6.0,<14" },
     { name = "loguru", specifier = ">=0.7.3,<1" },
     { name = "numpy", specifier = ">=1.26.4,<2" },
@@ -215,7 +219,7 @@ requires-dist = [
     { name = "seaborn", specifier = ">=0.13.2,<1" },
     { name = "tqdm", specifier = ">=4.67.1,<5" },
 ]
-provides-extras = ["cu13", "cu12"]
+provides-extras = ["cpu", "cu13", "cu12"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -400,12 +404,12 @@ source = { registry = "https://pypi.nvidia.com/" }
 dependencies = [
     { name = "cachetools" },
     { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" } },
-    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["nvcc", "nvrtc"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["nvcc", "nvrtc"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "cupy-cuda12x" },
     { name = "fsspec" },
     { name = "libcudf-cu12" },
     { name = "numba" },
-    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "nvtx" },
     { name = "packaging" },
@@ -428,12 +432,12 @@ source = { registry = "https://pypi.nvidia.com/" }
 dependencies = [
     { name = "cachetools" },
     { name = "cuda-python", version = "13.0.3", source = { registry = "https://pypi.org/simple" } },
-    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["nvcc", "nvrtc"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["nvcc", "nvrtc"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "cupy-cuda13x" },
     { name = "fsspec" },
     { name = "libcudf-cu13" },
     { name = "numba" },
-    { name = "numba-cuda", extra = ["cu13"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "numba-cuda", extra = ["cu13"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "nvtx" },
     { name = "packaging" },
@@ -455,7 +459,7 @@ version = "25.10.0"
 source = { registry = "https://pypi.nvidia.com/" }
 dependencies = [
     { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" } },
-    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "cudf-cu12" },
     { name = "cupy-cuda12x" },
     { name = "dask-cuda" },
@@ -463,7 +467,7 @@ dependencies = [
     { name = "joblib" },
     { name = "libcuml-cu12" },
     { name = "numba" },
-    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "packaging" },
     { name = "pylibraft-cu12" },
@@ -486,7 +490,7 @@ version = "25.10.0"
 source = { registry = "https://pypi.nvidia.com/" }
 dependencies = [
     { name = "cuda-python", version = "13.0.3", source = { registry = "https://pypi.org/simple" } },
-    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "cudf-cu13" },
     { name = "cupy-cuda13x" },
     { name = "dask-cuda" },
@@ -494,7 +498,7 @@ dependencies = [
     { name = "joblib" },
     { name = "libcuml-cu13" },
     { name = "numba" },
-    { name = "numba-cuda", extra = ["cu13"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "numba-cuda", extra = ["cu13"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "packaging" },
     { name = "pylibraft-cu13" },
@@ -658,7 +662,7 @@ name = "distributed-ucxx-cu12"
 version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "pyyaml" },
     { name = "rapids-dask-dependency" },
     { name = "ucxx-cu12" },
@@ -672,7 +676,7 @@ name = "distributed-ucxx-cu13"
 version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "numba-cuda", extra = ["cu13"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "numba-cuda", extra = ["cu13"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "pyyaml" },
     { name = "rapids-dask-dependency" },
     { name = "ucxx-cu13" },
@@ -686,7 +690,7 @@ name = "docker"
 version = "7.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pywin32", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "pywin32", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
     { name = "requests" },
     { name = "urllib3" },
 ]
@@ -979,7 +983,7 @@ name = "libcuml-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "libraft-cu12" },
     { name = "rapids-logger" },
 ]
@@ -993,7 +997,7 @@ name = "libcuml-cu13"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "cufft", "curand", "cusolver", "cusparse"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "libraft-cu13" },
     { name = "rapids-logger" },
 ]
@@ -1025,7 +1029,7 @@ name = "libraft-cu12"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "cuda-toolkit", version = "12.9.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "librmm-cu12" },
     { name = "nvidia-nccl-cu12" },
     { name = "rapids-logger" },
@@ -1040,7 +1044,7 @@ name = "libraft-cu13"
 version = "25.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "curand", "cusolver", "cusparse"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "cuda-toolkit", version = "13.0.1", source = { registry = "https://pypi.org/simple" }, extra = ["cublas", "curand", "cusolver", "cusparse"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "librmm-cu13" },
     { name = "nvidia-nccl-cu13" },
     { name = "rapids-logger" },
@@ -1145,8 +1149,8 @@ name = "loguru"
 version = "0.7.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
-    { name = "win32-setctime", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "win32-setctime", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3a/05/a1dae3dffd1116099471c643b8924f5aa6524411dc6c63fdae648c4f1aca/loguru-0.7.3.tar.gz", hash = "sha256:19480589e77d47b8d85b2c827ad95d49bf31b0dcde16593892eb51dd18706eb6", size = 63559, upload-time = "2024-12-06T11:20:56.608Z" }
 wheels = [
@@ -1883,11 +1887,11 @@ version = "6.17.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "altgraph" },
-    { name = "macholib", marker = "sys_platform == 'darwin' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "macholib", marker = "sys_platform == 'darwin' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
     { name = "packaging" },
-    { name = "pefile", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "pefile", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
     { name = "pyinstaller-hooks-contrib" },
-    { name = "pywin32-ctypes", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "pywin32-ctypes", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
     { name = "setuptools" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/01/80/9e0dad9c69a7cfd4b5aaede8c6225d762bab7247a2a6b7651e1995522001/pyinstaller-6.17.0.tar.gz", hash = "sha256:be372bd911392b88277e510940ac32a5c2a6ce4b8d00a311c78fa443f4f27313", size = 4014147, upload-time = "2025-11-24T19:43:32.109Z" }
@@ -1996,7 +2000,7 @@ name = "pytest"
 version = "8.3.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
@@ -2366,7 +2370,7 @@ name = "tqdm"
 version = "4.67.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13') or (extra == 'extra-4-core-cu12' and extra == 'extra-4-core-cu13')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a8/4b/29b4ef32e036bb34e4ab51796dd745cdba7ed47ad142a9f4a1eb8e0c744d/tqdm-4.67.1.tar.gz", hash = "sha256:f8aef9c52c08c13a65f30ea34f4e5aac3fd1a34959879d7e59e63027286627f2", size = 169737, upload-time = "2024-11-24T20:12:22.481Z" }
 wheels = [
@@ -2442,7 +2446,7 @@ version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "libucxx-cu12" },
-    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12'" },
+    { name = "numba-cuda", extra = ["cu12"], marker = "extra == 'extra-4-core-cu12' or (extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "nvidia-ml-py" },
     { name = "rmm-cu12" },
@@ -2458,7 +2462,7 @@ version = "0.46.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "libucxx-cu13" },
-    { name = "numba-cuda", extra = ["cu13"], marker = "extra == 'extra-4-core-cu13'" },
+    { name = "numba-cuda", extra = ["cu13"], marker = "(extra == 'extra-4-core-cpu' and extra == 'extra-4-core-cu12') or (extra != 'extra-4-core-cu12' and extra == 'extra-4-core-cu13') or (extra != 'extra-4-core-cpu' and extra == 'extra-4-core-cu13')" },
     { name = "numpy" },
     { name = "nvidia-ml-py" },
     { name = "rmm-cu13" },

@@ -5,7 +5,6 @@ description = "An implementation of GENIE3 (GEne Network Inference with Ensemble
 readme = "README.md"
 
 dependencies = [
-    "cupy-cuda12x>=13.6.0, <14",
     "loguru>=0.7.3, <1",
     "numpy>=1.26.4, <2",
     "pandas>=2.2.3, <3",
@@ -16,6 +15,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+cpu = [
+  "cupy-cuda12x>=13.6.0, <14",
+]
 cu13 = [
     "cupy-cuda13x>=13.6.0, <14",
     "cudf-cu13==25.10.*",
@@ -29,6 +31,7 @@ cu12 = [
 [tool.uv]
 conflicts = [
     [
+      { extra = "cpu" },
       { extra = "cu13" },
       { extra = "cu12" },
     ],
