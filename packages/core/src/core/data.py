@@ -186,7 +186,9 @@ def load_gene_expression_data(
     Returns:
         pd.DataFrame: Gene expression data.
     """
-    return pd.read_csv(gene_expression_path, sep="\t", header=0)
+    df = pd.read_csv(gene_expression_path, sep="\t", header=0)
+    df = df.reindex(sorted(df.columns), axis=1)
+    return df
 
 
 def load_transcription_factor_data(
@@ -201,10 +203,10 @@ def load_transcription_factor_data(
     Returns:
         pd.Series: Transcription factor data.
     """
-    transcription_factors: pd.Series = pd.read_csv(
+    series: pd.Series = pd.read_csv(
         transcription_factor_path, sep="\t", header=0
     ).squeeze()
-    return transcription_factors
+    return series.sort_values()
 
 
 def load_reference_network_data(reference_network_path: Path) -> pd.DataFrame:

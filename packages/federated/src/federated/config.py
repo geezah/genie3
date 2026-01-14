@@ -1,31 +1,22 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
-from core.config import DataConfig, RegressorConfig
+from core.config import RegressorConfig
 from pydantic import BaseModel, Field
-
-from federated.simulation import SimulationStrategyType
 
 
 class ParticipantConfig(BaseModel):
-    regressor: RegressorConfig
-    data: DataConfig
-
-
-class SimulationConfig(BaseModel):
-    strategy: SimulationStrategyType = Field(..., description="Simulation strategy")
-
-
-class SimCoordinatorConfig(BaseModel):
-    regressor: RegressorConfig
-    simulation: Optional[SimulationConfig] = Field(
-        None, description="Simulation configuration"
+    gene_expressions_path: Path = Field(
+        ..., description="Path to the gene expression data"
     )
+    regressor: Optional[RegressorConfig] = Field(None)
 
-    def model_post_init(self, *args, **kwargs):
-        # Convert single aggregation config to list if needed
-        if not isinstance(self.aggregation, list):
-            self.aggregation = [self.aggregation]
+
+class CoordinatorConfig(BaseModel):
+    regressor: RegressorConfig
+    transcription_factors_path: Optional[Path] = Field(
+        None, description="Path to the transcription factor data"
+    )
 
 
 if __name__ == "__main__":
@@ -33,14 +24,14 @@ if __name__ == "__main__":
 
     import yaml
 
-    CONFIG_PATH = Path("controller_data/generic/server.yaml")
+    CONFIG_PATH = Path("controller_data/clients/client_1/participant.yaml")
     with open(CONFIG_PATH, "r") as f:
-        cfg = yaml.safe_load(f)
-    cfg = SimCoordinatorConfig.model_validate(cfg)
+        cfg_dict = yaml.safe_load(f)
+    cfg = ParticipantConfig(**cfg_dict)
     pprint(cfg.model_dump())
 
-    CONFIG_PATH = Path("controller_data/generic/client.yaml")
+    CONFIG_PATH = Path("controller_data/generic/coordinator.yaml")
     with open(CONFIG_PATH, "r") as f:
-        cfg = yaml.safe_load(f)
-    cfg = ParticipantConfig.model_validate(cfg)
+        cfg_dict = yaml.safe_load(f)
+    cfg = CoordinatorConfig(**cfg_dict)
     pprint(cfg.model_dump())
