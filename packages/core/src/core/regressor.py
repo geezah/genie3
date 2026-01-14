@@ -12,13 +12,19 @@ try:
     cp.cuda.is_available()
 except CUDARuntimeError:
     pass
-CUDA_AVAILABLE = cp.cuda.is_available()
+CUDA_AVAILABLE : bool = cp.cuda.is_available()
 
+CUML_AVAILABLE : bool = False
 if CUDA_AVAILABLE:
-    from cuml.ensemble import (
-        RandomForestRegressor as _CuRandomForestRegressor,
-    )
-    from cuml.explainer import TreeExplainer
+    try:
+        from cuml.ensemble import (
+            RandomForestRegressor as _CuRandomForestRegressor,
+        )
+        from cuml.explainer import TreeExplainer
+    except ImportError:
+        pass
+
+
 
 
 class BaseRegressor(ABC):

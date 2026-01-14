@@ -14,9 +14,11 @@ from typing_extensions import Self
 from .regressor import CUDA_AVAILABLE
 
 if CUDA_AVAILABLE:
-    from cudf.pandas import install
-
-    install()
+    try: 
+        from cudf.pandas import install
+        install()
+    except ImportError:
+        pass
 import pandas as pd  # noqa : F401
 
 
@@ -203,10 +205,9 @@ def load_transcription_factor_data(
     Returns:
         pd.Series: Transcription factor data.
     """
-    series: pd.Series = pd.read_csv(
+    return pd.read_csv(
         transcription_factor_path, sep="\t", header=0
     ).squeeze()
-    return series.sort_values()
 
 
 def load_reference_network_data(reference_network_path: Path) -> pd.DataFrame:
