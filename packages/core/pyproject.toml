@@ -5,7 +5,7 @@ description = "An implementation of GENIE3 (GEne Network Inference with Ensemble
 readme = "README.md"
 
 dependencies = [
-    "cupy-cuda12x>=13.6.0, <14; extra != 'cu13'",
+    "cupy-cuda12x>=13.6.0, <14",
     "loguru>=0.7.3, <1",
     "numpy>=1.26.4, <2",
     "pandas>=2.2.3, <3",

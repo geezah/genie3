@@ -1,9 +1,6 @@
 FROM python:3.13-slim
 COPY --from=ghcr.io/astral-sh/uv:0.9.12 /uv /uvx /bin/
 
-# Define build argument for CUDA version (defaults to cu12)
-ARG CUDA_VERSION=cu12
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates && \
     apt-get install -y --no-install-recommends build-essential gcc supervisor nginx && \
@@ -22,12 +19,12 @@ ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-workspace --all-packages --extra ${CUDA_VERSION}
+    uv sync --frozen --no-install-workspace --all-packages
 
 ADD . /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --all-packages --extra ${CUDA_VERSION}
+    uv sync --locked --all-packages
 
 ENV PATH="/app/.venv/bin:$PATH"
 

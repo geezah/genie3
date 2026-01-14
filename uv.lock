@@ -170,6 +170,7 @@ name = "core"
 version = "0.1.0"
 source = { editable = "packages/core" }
 dependencies = [
+    { name = "cupy-cuda12x" },
     { name = "loguru" },
     { name = "numpy" },
     { name = "pandas" },
@@ -204,7 +205,7 @@ requires-dist = [
     { name = "cudf-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
     { name = "cuml-cu12", marker = "extra == 'cu12'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu12" } },
     { name = "cuml-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
-    { name = "cupy-cuda12x", marker = "extra != 'cu13'", specifier = ">=13.6.0,<14" },
+    { name = "cupy-cuda12x", specifier = ">=13.6.0,<14" },
     { name = "cupy-cuda13x", marker = "extra == 'cu13'", specifier = ">=13.6.0,<14" },
     { name = "loguru", specifier = ">=0.7.3,<1" },
     { name = "numpy", specifier = ">=1.26.4,<2" },
