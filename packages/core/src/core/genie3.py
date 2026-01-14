@@ -10,14 +10,16 @@ from .data import GRNDataset
 
 from .regressor import RegressorRegistry, CUDA_AVAILABLE
 
+
 if CUDA_AVAILABLE:
-    from cudf.pandas import install
-
-    install()
-
-    import cupy as cp
-
-    xp = cp
+    try:
+        from cudf.pandas import install
+        install()
+        import cupy as cp
+        xp = cp
+    except ImportError:
+        pass
+    xp = np
 else:
     xp = np
 import pandas as pd  # noqa : F401
