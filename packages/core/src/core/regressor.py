@@ -3,18 +3,18 @@ from typing import Any, Callable, Dict, Optional, Type
 
 import cupy as cp
 from cupy.typing import ArrayLike
+from cupy_backends.cuda.api.runtime import CUDARuntimeError
 from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor
 from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor
-from cupy_backends.cuda.api.runtime import CUDARuntimeError
 
 # Workaround for bug: https://github.com/cupy/cupy/issues/9091
 try:
     cp.cuda.is_available()
 except CUDARuntimeError:
     pass
-CUDA_AVAILABLE : bool = cp.cuda.is_available()
+CUDA_AVAILABLE: bool = cp.cuda.is_available()
 
-CUML_AVAILABLE : bool = False
+CUML_AVAILABLE: bool = False
 if CUDA_AVAILABLE:
     try:
         from cuml.ensemble import (
@@ -23,8 +23,6 @@ if CUDA_AVAILABLE:
         from cuml.explainer import TreeExplainer
     except ImportError:
         pass
-
-
 
 
 class BaseRegressor(ABC):

@@ -14,8 +14,9 @@ from typing_extensions import Self
 from .regressor import CUDA_AVAILABLE
 
 if CUDA_AVAILABLE:
-    try: 
+    try:
         from cudf.pandas import install
+
         install()
     except ImportError:
         pass
@@ -62,15 +63,20 @@ class GRNDataset(BaseModel):
         description="A DataFrame representing the reference network with columns: transcription_factor, target_gene, and label.",
     )
     _gene_names: List[str] = PrivateAttr()  # Set dynamically
-    _transcription_factor_indices: List[int] = PrivateAttr()  # Set dynamically
+    _transcription_factor_indices: List[int] = PrivateAttr()
 
-    def __init__(self, **data: Any):
+    def __init__(self, **data):
         super().__init__(**data)
-        self._gene_names = list(self.gene_expressions.columns)
-        names_to_indices = {name: index for index, name in enumerate(self._gene_names)}
-        self._transcription_factor_indices = self.transcription_factor_names.map(
-            names_to_indices
+        # The sorted transcription factor columns are first, while the sorted set of remaining columns is appended.
+        # This is done so that
+        tf_columns = sorted(list(self.transcription_factor_names))
+        non_tf_columns = sorted(
+            [c for c in self.gene_expressions.columns if c not in tf_columns]
         )
+        columns = tf_columns + non_tf_columns
+        self.gene_expressions = self.gene_expressions[columns]
+        self._gene_names = list(self.gene_expressions.columns)
+        self._transcription_factor_indices = list(range(0, len(tf_columns)))
 
     @field_validator("reference_network", mode="after")
     @classmethod
@@ -172,7 +178,6 @@ class GRNDataset(BaseModel):
                         ]
                     )
                 )
-
         return self
 
 
@@ -189,7 +194,6 @@ def load_gene_expression_data(
         pd.DataFrame: Gene expression data.
     """
     df = pd.read_csv(gene_expression_path, sep="\t", header=0)
-    df = df.reindex(sorted(df.columns), axis=1)
     return df
 
 
@@ -205,9 +209,7 @@ def load_transcription_factor_data(
     Returns:
         pd.Series: Transcription factor data.
     """
-    return pd.read_csv(
-        transcription_factor_path, sep="\t", header=0
-    ).squeeze()
+    return pd.read_csv(transcription_factor_path, sep="\t", header=0).squeeze()
 
 
 def load_reference_network_data(reference_network_path: Path) -> pd.DataFrame:
@@ -242,6 +244,7 @@ def init_grn_dataset(
         reference_network: pd.DataFrame = load_reference_network_data(
             reference_network_path
         )
+
     return GRNDataset(
         gene_expressions=gene_expressions,
         transcription_factor_names=transcription_factor_names,

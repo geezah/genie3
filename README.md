@@ -48,7 +48,7 @@ git clone https://github.com/geezah/genie3.git
 cd genie
 
 # Install with uv
-uv sync --all-packages
+uv sync --all-packages --extra cpu
 ```
 
 ### Optional GPU installation
