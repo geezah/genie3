@@ -11,9 +11,6 @@ from .regressor import CUDA_AVAILABLE, RegressorRegistry
 
 if CUDA_AVAILABLE:
     try:
-        from cudf.pandas import install
-
-        install()
         import cupy as cp
 
         xp = cp

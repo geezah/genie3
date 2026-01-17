@@ -186,11 +186,10 @@ cpu = [
     { name = "cupy-cuda12x" },
 ]
 cu12 = [
-    { name = "cudf-cu12" },
     { name = "cuml-cu12" },
+    { name = "cupy-cuda12x" },
 ]
 cu13 = [
-    { name = "cudf-cu13" },
     { name = "cuml-cu13" },
     { name = "cupy-cuda13x" },
 ]
@@ -205,11 +204,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "cudf-cu12", marker = "extra == 'cu12'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu12" } },
-    { name = "cudf-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
     { name = "cuml-cu12", marker = "extra == 'cu12'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu12" } },
     { name = "cuml-cu13", marker = "extra == 'cu13'", specifier = "==25.10.*", index = "https://pypi.nvidia.com/", conflict = { package = "core", extra = "cu13" } },
     { name = "cupy-cuda12x", marker = "extra == 'cpu'", specifier = ">=13.6.0,<14" },
+    { name = "cupy-cuda12x", marker = "extra == 'cu12'", specifier = ">=13.6.0,<14" },
     { name = "cupy-cuda13x", marker = "extra == 'cu13'", specifier = ">=13.6.0,<14" },
     { name = "loguru", specifier = ">=0.7.3,<1" },
     { name = "numpy", specifier = ">=1.26.4,<2" },
@@ -400,7 +398,7 @@ nvrtc = [
 [[package]]
 name = "cudf-cu12"
 version = "25.10.0"
-source = { registry = "https://pypi.nvidia.com/" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
     { name = "cuda-python", version = "12.9.4", source = { registry = "https://pypi.org/simple" } },
@@ -421,14 +419,14 @@ dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { url = "https://pypi.nvidia.com/cudf-cu12/cudf_cu12-25.10.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:030811e6b2c1bcb88a706439440319ee67c9816c3b6e30c4fd83b8d1a25f8430" },
-    { url = "https://pypi.nvidia.com/cudf-cu12/cudf_cu12-25.10.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4e4726440f7dcde6874302fe559bd13909fc060c1a54265f77689d98ba00f599" },
+    { url = "https://files.pythonhosted.org/packages/8a/ff/0c65219d428fefbdab787a691d94e27bd42bc7f444bfaff2043168b3e3f7/cudf_cu12-25.10.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:030811e6b2c1bcb88a706439440319ee67c9816c3b6e30c4fd83b8d1a25f8430", size = 2598605, upload-time = "2025-10-09T01:15:42.144Z" },
+    { url = "https://files.pythonhosted.org/packages/87/ec/0a46f635b88fa88a13d366554c00aa9b2bc892a6c9e79088edbe3b5dea7a/cudf_cu12-25.10.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4e4726440f7dcde6874302fe559bd13909fc060c1a54265f77689d98ba00f599", size = 2602566, upload-time = "2025-10-09T01:20:03.47Z" },
 ]
 
 [[package]]
 name = "cudf-cu13"
 version = "25.10.0"
-source = { registry = "https://pypi.nvidia.com/" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cachetools" },
     { name = "cuda-python", version = "13.0.3", source = { registry = "https://pypi.org/simple" } },
@@ -449,8 +447,8 @@ dependencies = [
     { name = "typing-extensions" },
 ]
 wheels = [
-    { url = "https://pypi.nvidia.com/cudf-cu13/cudf_cu13-25.10.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2acf3a28230561247d5618b649f28c083a32e244a838025e762121fe04aaf683" },
-    { url = "https://pypi.nvidia.com/cudf-cu13/cudf_cu13-25.10.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:affa173850af9723fde1927a449d175ad94fb0c040f46d8386a5e981ab326c4a" },
+    { url = "https://files.pythonhosted.org/packages/4b/71/0124d57fa5d72d103c5d963fddcce8a79146cbf4cc08d6a28fb89c95cb2f/cudf_cu13-25.10.0-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2acf3a28230561247d5618b649f28c083a32e244a838025e762121fe04aaf683", size = 2058600, upload-time = "2025-10-09T01:14:47.193Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/08/6cb109bfc1b976e876a5553748fb6f4cf5142aa57d57c8c1bec6e82d852c/cudf_cu13-25.10.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:affa173850af9723fde1927a449d175ad94fb0c040f46d8386a5e981ab326c4a", size = 2066972, upload-time = "2025-10-09T01:22:53.048Z" },
 ]
 
 [[package]]

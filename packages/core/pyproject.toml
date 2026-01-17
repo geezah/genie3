@@ -20,11 +20,10 @@ cpu = [
 ]
 cu13 = [
     "cupy-cuda13x>=13.6.0, <14",
-    "cudf-cu13==25.10.*",
     "cuml-cu13==25.10.*",
 ]
 cu12 = [
-    "cudf-cu12==25.10.*",
+    "cupy-cuda12x>=13.6.0, <14",
     "cuml-cu12==25.10.*",
 ]
 
@@ -41,13 +40,7 @@ conflicts = [
 cuml-cu13 = [
   { index = "nvidia", extra = "cu13"}
 ]
-cudf-cu13 = [
-  { index = "nvidia", extra = "cu13"}
-]
 cuml-cu12 = [
-  { index = "nvidia", extra = "cu12"}
-]
-cudf-cu12 = [
   { index = "nvidia", extra = "cu12"}
 ]
 

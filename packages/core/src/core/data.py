@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import List, Optional
 
 from pydantic import (
     BaseModel,
@@ -11,15 +11,6 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from .regressor import CUDA_AVAILABLE
-
-if CUDA_AVAILABLE:
-    try:
-        from cudf.pandas import install
-
-        install()
-    except ImportError:
-        pass
 import pandas as pd  # noqa : F401
 
 
@@ -47,6 +38,9 @@ class GRNDataset(BaseModel):
 
     _gene_names : List[str]
         A dynamically created list of gene names derived from the columns of the gene_expressions DataFrame.
+
+    _transcription_factor_indices : List[int]
+        A dynamically created list of transcription factor indices.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
