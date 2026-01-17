@@ -1,5 +1,5 @@
-import pytest
 import pandas as pd
+import pytest
 from core.data import GRNDataset
 
 
@@ -42,7 +42,7 @@ class TestGRNDataset:
         )
 
         assert dataset._gene_names == ["gene1", "gene2", "gene3"]
-        assert list(dataset._transcription_factor_indices) == [0, 1]
+        assert dataset._transcription_factor_indices == [0, 1]
 
     def test_dataset_without_tf_names(
         self, valid_gene_expressions, valid_reference_network

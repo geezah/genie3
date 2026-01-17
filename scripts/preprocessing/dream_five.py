@@ -18,9 +18,7 @@ def _map_gene_ids_to_names_for_expression_data(
 def _map_gene_ids_to_names_for_network_data(
     network: pd.DataFrame, gene_ids: Dict[str, str]
 ) -> pd.DataFrame:
-    network["transcription_factor"] = network["transcription_factor"].map(
-        gene_ids
-    )
+    network["transcription_factor"] = network["transcription_factor"].map(gene_ids)
     network["target_gene"] = network["target_gene"].map(gene_ids)
     return network
 
@@ -46,17 +44,11 @@ def _preprocess_dream_five(root: Path, network_id: Literal[1, 3, 4]) -> None:
     reference_network_dir = root / "test data"
 
     gene_expression_path = (
-        training_data_dir
-        / network_dir
-        / f"net{network_id}_expression_data.tsv"
+        training_data_dir / network_dir / f"net{network_id}_expression_data.tsv"
     )
-    id_to_name_path = (
-        training_data_dir / network_dir / f"net{network_id}_gene_ids.tsv"
-    )
+    id_to_name_path = training_data_dir / network_dir / f"net{network_id}_gene_ids.tsv"
     transcription_factors_path = (
-        training_data_dir
-        / network_dir
-        / f"net{network_id}_transcription_factors.tsv"
+        training_data_dir / network_dir / f"net{network_id}_transcription_factors.tsv"
     )
     network_data_path = (
         reference_network_dir
@@ -109,9 +101,7 @@ def _preprocess_dream_five(root: Path, network_id: Literal[1, 3, 4]) -> None:
     transcription_factors = _map_gene_ids_to_names_for_transcription_factors(
         transcription_factors, id_to_name_mapping
     )
-    indices_to_names = pd.Series(
-        gene_expressions.columns.to_list(), name="gene_name"
-    )
+    indices_to_names = pd.Series(gene_expressions.columns.to_list(), name="gene_name")
 
     return (
         gene_expressions,
@@ -122,14 +112,10 @@ def _preprocess_dream_five(root: Path, network_id: Literal[1, 3, 4]) -> None:
 
 
 def preprocess_dream_five(
-    raw_data_root: Path = Path(
-        "local_data/raw/syn2787209/Gene Network Inference"
-    ),
+    raw_data_root: Path = Path("local_data/raw/syn2787209/Gene Network Inference"),
     processed_data_root: Path = Path("local_data/processed/dream_five"),
 ):
-    print(
-        f"Processing DREAM5 data from {raw_data_root} to {processed_data_root}"
-    )
+    print(f"Processing DREAM5 data from {raw_data_root} to {processed_data_root}")
     net_id_to_net_name = {
         1: "in-silico",
         3: "e-coli",
@@ -179,9 +165,7 @@ app = Typer(pretty_exceptions_show_locals=False)
 
 @app.command()
 def main(
-    raw_data_root: Path = Path(
-        "local_data/raw/syn2787209/Gene Network Inference"
-    ),
+    raw_data_root: Path = Path("local_data/raw/syn2787209/Gene Network Inference"),
     processed_data_root: Path = Path("local_data/processed/dream_five"),
 ):
     preprocess_dream_five(raw_data_root, processed_data_root)
