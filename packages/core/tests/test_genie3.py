@@ -1,16 +1,16 @@
-import pytest
-import numpy as np
-import pandas as pd
 from unittest.mock import patch
 
-from core.genie3 import (
-    run,
-    partition_data,
-    calculate_importances,
-    rank_genes_by_importance,
-)
-from core.data import GRNDataset
+import numpy as np
+import pandas as pd
+import pytest
 from core.config import RegressorConfig
+from core.data import GRNDataset
+from core.genie3 import (
+    calculate_importances,
+    partition_data,
+    rank_genes_by_importance,
+    run,
+)
 
 
 @pytest.fixture
