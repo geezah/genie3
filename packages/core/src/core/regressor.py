@@ -335,6 +335,7 @@ if CUDA_AVAILABLE:
                 if fit_params
                 else DefaultCuRandomForestConfiguration["fit_params"]
             )
+            X, y = cp.asarray(X), cp.asarray(y)
             self.regressor.fit(X, y, **fit_params)
             # Note: cuML does not provide feature importances directly, so we use SHAP values instead.
             explainer = TreeExplainer(model=self.regressor)
