@@ -108,6 +108,16 @@ regressor:
     random_state: 42
 ```
 
+## Outputs
+For each participant, the federated application outputs a `local_predicted_network.csv` computed based on the local data of each participant, and the `global_predicted_network.csv` that was aggregated at the coordinator.
+The predicted network files adhere to the following schema:
+
+```tsv
+transcription_factor  target_gene  importance # Header row
+Gene1                 Gene2        0.8
+Gene1                 Gene3        0.2
+...
+```
 
 ## Data Format
 
