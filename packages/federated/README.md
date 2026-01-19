@@ -140,23 +140,6 @@ If you use Federated GENIE3 in your research, please cite both the original GENI
   doi = {10.1371/journal.pone.0012776}
 }
 ```
-```bibtex
-@article{hauschildFederatedRandomForests2022a,
-  title = {Federated {{Random Forests}} Can Improve Local Performance of Predictive Models for Various Healthcare Applications},
-  author = {Hauschild, Anne-Christin and Lemanczyk, Marta and Matschinske, Julian and Frisch, Tobias and Zolotareva, Olga and Holzinger, Andreas and Baumbach, Jan and Heider, Dominik},
-  editor = {Wren, Jonathan},
-  year = 2022,
-  month = apr,
-  journal = {Bioinformatics},
-  volume = {38},
-  number = {8},
-  pages = {2278--2286},
-  issn = {1367-4803, 1367-4811},
-  doi = {10.1093/bioinformatics/btac065},
-  urldate = {2024-12-18},
-  copyright = {https://academic.oup.com/journals/pages/open\_access/funder\_policies/chorus/standard\_publication\_model},
-}
-```
 ## Related Resources
 
 - [FeatureCloud Platform](https://featurecloud.ai/)
