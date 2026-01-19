@@ -34,19 +34,15 @@ def run(dataset: GRNDataset, regressor_config: RegressorConfig) -> pd.DataFrame:
     return predicted_network
 
 
-def calculate_importances(
-    dataset: GRNDataset,
-    regressor_config: RegressorConfig,
-) -> ArrayLike:
+def preprocess_data(dataset: GRNDataset, regressor_config: RegressorConfig):
     gene_expressions: ArrayLike = xp.asarray(dataset.gene_expressions.values)
-
     # Get the number of genes and transcription factors
-    num_genes = gene_expressions.shape[1]
-    num_transcription_factors = len(dataset._transcription_factor_indices)
 
     transcription_factor_indices: ArrayLike = xp.asarray(
         dataset._transcription_factor_indices
     )
+    num_genes = gene_expressions.shape[1]
+    num_transcription_factors = len(dataset._transcription_factor_indices)
 
     # Initialize the importance matrix
     importance_matrix = xp.zeros(
@@ -58,6 +54,17 @@ def calculate_importances(
             gene_expressions, transcription_factor_indices, importance_matrix
         )
     )
+    return gene_expressions, transcription_factor_indices, importance_matrix
+
+
+def calculate_importances(
+    dataset: GRNDataset,
+    regressor_config: RegressorConfig,
+) -> ArrayLike:
+    gene_expressions, transcription_factor_indices, importance_matrix = preprocess_data(
+        dataset, regressor_config
+    )
+    num_genes = gene_expressions.shape[1]
 
     progress_bar = tqdm(
         range(num_genes),
