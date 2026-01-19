@@ -51,7 +51,7 @@ This package is part of the GENIE3 monorepo. See the [main repository README](..
 
 ## Inputs
 
-As inputs, the app expects a coordinator configuration, and at least one and up to 10 participant configurations.
+As inputs, the app expects a coordinator configuration, and at least one participant configuration.
 
 Details for the `RegressorConfig` used below can be found [here](../core/src/core/config.py). Supported Regressors are listed [here](../core/README.md#features)
 
