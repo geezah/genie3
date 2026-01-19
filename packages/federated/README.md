@@ -1,6 +1,6 @@
 # Federated GENIE3 for FeatureCloud
 
-A privacy-preserving implementation of GENIE3 (GEne Network Inference with Ensemble of trees) for the [FeatureCloud](https://featurecloud.ai/) platform. This package enables federated gene regulatory network (GRN) inference across multiple data sites without sharing raw data.
+A privacy-preserving, decentralized implementation of GENIE3 (GEne Network Inference with Ensemble of trees) for the [FeatureCloud](https://featurecloud.ai/) platform. This package enables federated gene regulatory network (GRN) inference across multiple data sites without sharing raw data.
 
 ## Overview
 
@@ -120,29 +120,5 @@ Gene1                 Gene3        0.2
 ```
 
 ## Data Format
-
 See [the data format specification in the `core` README](../core/README.md#data-format).
 Note that the federated implementation does not expect the reference network data as input, since it only runs inference and no evaluation.
-
-## Citation
-
-If you use Federated GENIE3 in your research, please cite both the original GENIE3 paper and FeatureCloud:
-
-```bibtex
-@article{huynh-thuInferringRegulatoryNetworks2010,
-  title = {Inferring {{Regulatory Networks}} from {{Expression Data Using Tree-Based Methods}}},
-  author = {{Huynh-Thu}, V{\^a}n Anh and Irrthum, Alexandre and Wehenkel, Louis and Geurts, Pierre},
-  year = {2010},
-  journal = {PLoS ONE},
-  volume = {5},
-  number = {9},
-  pages = {e12776},
-  doi = {10.1371/journal.pone.0012776}
-}
-```
-## Related Resources
-
-- [FeatureCloud Platform](https://featurecloud.ai/)
-- [FeatureCloud Documentation](https://featurecloud.ai/documentation)
-- [Core GENIE3 Package](../core/README.md)
-- [Main Repository](../../README.md)
