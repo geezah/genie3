@@ -19,12 +19,12 @@ ENV UV_LINK_MODE=copy
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-workspace --all-packages
+    uv sync --frozen --no-install-workspace --all-packages --extra cpu
 
 ADD . /app
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --all-packages
+    uv sync --locked --all-packages --extra cpu
 
 ENV PATH="/app/.venv/bin:$PATH"
 
