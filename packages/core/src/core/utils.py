@@ -66,7 +66,7 @@ def write_network(network: pd.DataFrame, output_path: Path) -> None:
         None
     """
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    network.to_csv(output_path, index=False)
+    network.to_csv(output_path, index=False, sep="\t")
 
 
 def write_metrics(
@@ -90,7 +90,7 @@ def write_metrics(
             "metric": ["auroc", "auprc", "pos_frac"],
             "score": [auroc, auprc, pos_frac],
         },
-    ).to_csv(output_dir / "metrics.csv", index=False)
+    ).to_csv(output_dir / "metrics.csv", index=False, sep="\t")
 
 
 def write_plot(plot: Figure, output_path: Path) -> None:
