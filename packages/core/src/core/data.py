@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List, Optional
 
+import polars as pl
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -11,8 +12,6 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-import pandas as pd  # noqa : F401
-
 
 class GRNDataset(BaseModel):
     """
@@ -20,154 +19,185 @@ class GRNDataset(BaseModel):
 
     Attributes:
     ----------
-    gene_expressions : pd.DataFrame
-        A DataFrame where rows represent samples and columns represent genes.
-        Entries in the DataFrame are the gene expression values.
+    gene_expressions : pl.LazyFrame
+        A LazyFrame where rows represent samples and columns represent genes.
+        Entries are the gene expression values.
 
-    transcription_factor_names : Optional[pd.Series]
+    transcription_factor_names : Optional[pl.Series]
         An optional Series where each entry represents the name of a transcription factor (TF).
-        If provided, it will be checked against the gene_expressions columns.
+        If provided, it will be checked against the gene_expressions schema.
 
-    reference_network : Optional[pd.DataFrame]
-        An optional DataFrame with columns:
+    reference_network : Optional[pl.LazyFrame]
+        An optional LazyFrame with columns:
         - `transcription_factor` (str): Name of the transcription factor.
         - `target_gene` (str): Name of the target gene.
         - `label` ({0, 1}): Indicates whether there is a regulatory interaction (1) or not (0).
         If provided, it will be checked to ensure the `transcription_factor` and `target_gene`
-        columns are present in the gene_expressions DataFrame.
+        columns are present in the gene_expressions schema.
 
     _gene_names : List[str]
-        A dynamically created list of gene names derived from the columns of the gene_expressions DataFrame.
+        A dynamically created list of gene names derived from the gene_expressions schema,
+        with sorted TF columns first followed by sorted non-TF columns.
 
     _transcription_factor_indices : List[int]
-        A dynamically created list of transcription factor indices.
+        A dynamically created list of transcription factor column indices.
     """
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    gene_expressions: pd.DataFrame = Field(
+    gene_expressions: pl.LazyFrame = Field(
         ...,
-        description="A DataFrame of gene expression values with samples as rows and genes as columns.",
+        description="A LazyFrame of gene expression values with samples as rows and genes as columns.",
     )
-    transcription_factor_names: Optional[pd.Series] = Field(
+    transcription_factor_names: Optional[pl.Series] = Field(
         None, description="A Series containing transcription factor names."
     )
-    reference_network: Optional[pd.DataFrame] = Field(
+    reference_network: Optional[pl.LazyFrame] = Field(
         None,
-        description="A DataFrame representing the reference network with columns: transcription_factor, target_gene, and label.",
+        description="A LazyFrame representing the reference network with columns: "
+        "transcription_factor, target_gene, and label.",
     )
-    _gene_names: List[str] = PrivateAttr()  # Set dynamically
+
+    _gene_names: List[str] = PrivateAttr()
     _transcription_factor_indices: List[int] = PrivateAttr()
 
     def __init__(self, **data):
         super().__init__(**data)
-        # The sorted transcription factor columns are first, while the sorted set of remaining columns is appended.
-        # This is done so that
-        tf_columns = sorted(list(self.transcription_factor_names))
+        tf_columns = sorted(self.transcription_factor_names.to_list())
         non_tf_columns = sorted(
-            [c for c in self.gene_expressions.columns if c not in tf_columns]
+            col
+            for col in self.gene_expressions.collect_schema().names()
+            if col not in tf_columns
         )
-        columns = tf_columns + non_tf_columns
-        self.gene_expressions = self.gene_expressions[columns]
-        self._gene_names = list(self.gene_expressions.columns)
-        self._transcription_factor_indices = list(range(0, len(tf_columns)))
+        ordered_columns = tf_columns + non_tf_columns
+        self.gene_expressions = self.gene_expressions.select(ordered_columns)
+        self._gene_names = ordered_columns
+        self._transcription_factor_indices = list(range(len(tf_columns)))
 
     @field_validator("reference_network", mode="after")
     @classmethod
-    def check_label_values(cls, value: pd.DataFrame) -> pd.DataFrame:
-        # Verify that the label column contains only 0s and 1s
+    def check_label_values(
+        cls, value: Optional[pl.LazyFrame]
+    ) -> Optional[pl.LazyFrame]:
+        """Verify that the label column contains only 0s and 1s."""
         if value is not None:
-            if not set(value["label"].unique()) == {0, 1}:
+            invalid_labels = value.filter(
+                pl.col("label").lt(0), pl.col("label").gt(1)
+            ).collect()
+            if invalid_labels.height > 0:
                 raise ValueError(
-                    "The label column in the reference_network DataFrame must contain only 0s and 1s."
+                    "The label column in the reference_network must contain only 0s and 1s."
                 )
         return value
 
     @model_validator(mode="after")
     def tfs_subset_gene_expression_columns(self) -> Self:
-        # If transcription_factor_names is provided, check if it is a subset of the gene_expressions columns
-
+        """
+        If transcription_factor_names is provided, verify every TF name appears
+        in the gene_expressions schema.  Otherwise, default to all column names.
+        """
         if self.transcription_factor_names is not None:
-            invalid_tfs = set(self.transcription_factor_names) - set(
-                self.gene_expressions.columns
+            gene_columns = self.gene_expressions.collect_schema().names()
+            invalid_tfs = self.transcription_factor_names.filter(
+                self.transcription_factor_names.is_in(gene_columns).not_()
             )
-            if invalid_tfs:
+            if invalid_tfs.len() > 0:
                 raise ValueError(
-                    f"The following transcription factors are not present in the gene_expressions columns: {invalid_tfs}"
+                    "The following transcription factors are not present in the "
+                    f"gene_expressions columns: {set(invalid_tfs.to_list())}"
                 )
         else:
-            # If transcription_factor_names is not provided, create a Series from the gene_expressions columns
-            self.transcription_factor_names = pd.Series(self.gene_expressions.columns)
+            self.transcription_factor_names = pl.Series(
+                "transcription_factor_names",
+                self.gene_expressions.collect_schema().names(),
+            )
         return self
 
     @model_validator(mode="after")
     def validate_unique_gene_names(self) -> Self:
         """Validate that gene names in gene_expressions are unique."""
-        if len(self.gene_expressions.columns) != len(
-            set(self.gene_expressions.columns)
-        ):
-            duplicates = [
-                col
-                for col in self.gene_expressions.columns
-                if list(self.gene_expressions.columns).count(col) > 1
-            ]
+        columns = self.gene_expressions.collect_schema().names()
+        if len(columns) != len(set(columns)):
+            duplicates = {col for col in columns if columns.count(col) > 1}
             raise ValueError(
-                f"Gene names must be unique. Found duplicate gene names: {set(duplicates)}"
+                f"Gene names must be unique. Found duplicate gene names: {duplicates}"
             )
         return self
 
     @model_validator(mode="after")
     def validate_reference_network(self) -> Self:
         if self.reference_network is not None:
-            required_columns = {
-                "transcription_factor",
-                "target_gene",
-                "label",
-            }
-            missing_columns = required_columns - set(self.reference_network.columns)
+            # --- Schema-level: required columns present ------------------
+            required_columns = {"transcription_factor", "target_gene", "label"}
+            missing_columns = required_columns - set(
+                self.reference_network.collect_schema().names()
+            )
             if missing_columns:
                 raise ValueError(
-                    f"The reference_network DataFrame is missing the following required columns: {missing_columns}"
+                    "The reference_network LazyFrame is missing the following required "
+                    f"columns: {missing_columns}"
                 )
 
-            # Check for duplicate entries in the reference network
-            is_duplicate = self.reference_network.duplicated(
-                subset=["transcription_factor", "target_gene"]
+            # --- Data-level: no duplicate (tf, target_gene) pairs -------
+            duplicates = (
+                self.reference_network.group_by(["transcription_factor", "target_gene"])
+                .agg(pl.len().alias("count"))
+                .filter(pl.col("count") > 1)
+                .collect()
             )
-            if is_duplicate.any():
-                duplicates = self.reference_network[is_duplicate]
+            if duplicates.height > 0:
                 raise ValueError(
-                    f"Found duplicate entries in the reference network: \n{duplicates}"
+                    f"Found duplicate entries in the reference network:\n{duplicates}"
                 )
 
-            tfs_not_in_columns = set(
-                self.reference_network["transcription_factor"]
-            ) - set(self.gene_expressions.columns)
-            targets_not_in_columns = set(self.reference_network["target_gene"]) - set(
-                self.gene_expressions.columns
-            )
-            non_tfs_in_tfs = set(self.reference_network["transcription_factor"]) - set(
-                self.transcription_factor_names
-            )
-            if tfs_not_in_columns or targets_not_in_columns or non_tfs_in_tfs:
-                errors = []
-                if tfs_not_in_columns:
-                    errors.append(
-                        f"Transcription factors not found in gene expressions columns: {tfs_not_in_columns}"
-                    )
-                if targets_not_in_columns:
-                    errors.append(
-                        f"Target genes not found in gene expressions columns: {targets_not_in_columns}"
-                    )
-                if non_tfs_in_tfs:
-                    errors.append(
-                        f"Transcription factors in reference_network but not in transcription_factor_names: {non_tfs_in_tfs}"
-                    )
+            # --- Data-level: TFs and targets must exist in gene_expressions
+            gene_columns = self.gene_expressions.collect_schema().names()
+            tf_names = self.transcription_factor_names.to_list()
 
+            tfs_not_in_columns = (
+                self.reference_network.filter(
+                    pl.col("transcription_factor").is_in(gene_columns).not_()
+                )
+                .select(pl.col("transcription_factor").unique())
+                .collect()
+            )
+            targets_not_in_columns = (
+                self.reference_network.filter(
+                    pl.col("target_gene").is_in(gene_columns).not_()
+                )
+                .select(pl.col("target_gene").unique())
+                .collect()
+            )
+            non_tfs_in_network = (
+                self.reference_network.filter(
+                    pl.col("transcription_factor").is_in(tf_names).not_()
+                )
+                .select(pl.col("transcription_factor").unique())
+                .collect()
+            )
+
+            errors = []
+            if tfs_not_in_columns.height > 0:
+                errors.append(
+                    "Transcription factors not found in gene expressions columns: "
+                    f"{set(tfs_not_in_columns['transcription_factor'].to_list())}"
+                )
+            if targets_not_in_columns.height > 0:
+                errors.append(
+                    "Target genes not found in gene expressions columns: "
+                    f"{set(targets_not_in_columns['target_gene'].to_list())}"
+                )
+            if non_tfs_in_network.height > 0:
+                errors.append(
+                    "Transcription factors in reference_network but not in "
+                    f"transcription_factor_names: "
+                    f"{set(non_tfs_in_network['transcription_factor'].to_list())}"
+                )
+            if errors:
                 raise ValueError(
                     "\n".join(
                         [
-                            "The reference_network DataFrame is invalid due to the following errors:",
+                            "The reference_network LazyFrame is invalid due to the following errors:",
                             *errors,
                         ]
                     )
@@ -175,74 +205,74 @@ class GRNDataset(BaseModel):
         return self
 
 
-def load_gene_expression_data(
-    gene_expression_path: Path,
-) -> pd.DataFrame:
+def load_gene_expression_data(gene_expression_path: Path) -> pl.LazyFrame:
     """
-    Load gene expression data from a file.
+    Lazily scan gene expression data from a tab-separated file.
 
     Args:
-        gene_expression_path (Path): Path to the gene expression data file.
+        gene_expression_path (Path): Path to the gene expression TSV file.
 
     Returns:
-        pd.DataFrame: Gene expression data.
+        pl.LazyFrame: Lazily scanned gene expression data.
     """
-    df = pd.read_csv(gene_expression_path, sep="\t", header=0)
-    return df
+    return pl.scan_csv(gene_expression_path, separator="\t", has_header=True)
 
 
 def load_transcription_factor_data(
     transcription_factor_path: Path,
-) -> pd.Series:
+) -> pl.Series:
     """
-    Load transcription factor data from a file.
+    Load transcription factor names from a tab-separated file.
+
+    Collected eagerly since TF names must be in memory for schema-level
+    validation and column reordering during GRNDataset initialisation.
 
     Args:
-        transcription_factor_path (Path): Path to the transcription factor data file.
+        transcription_factor_path (Path): Path to the transcription factor TSV file.
 
     Returns:
-        pd.Series: Transcription factor data.
+        pl.Series: Transcription factor names.
     """
-    return pd.read_csv(transcription_factor_path, sep="\t", header=0).squeeze()
+    return (
+        pl.scan_csv(transcription_factor_path, separator="\t", has_header=True)
+        .collect()
+        .to_series(0)
+    )
 
 
-def load_reference_network_data(reference_network_path: Path) -> pd.DataFrame:
+def load_reference_network_data(reference_network_path: Path) -> pl.LazyFrame:
     """
-    Load reference network data from a given file path.
-    This function reads a tab-separated values (TSV) file containing reference network data
-    and returns it as a pandas DataFrame. The file is expected to have the following columns:
-    "transcription_factor", "target_gene", and "label".
+    Lazily scan reference network data from a tab-separated file.
+
+    The file is expected to contain the following columns:
+    ``transcription_factor``, ``target_gene``, and ``label``.
+
     Args:
-        reference_network_path (Path): The file path to the reference network data.
+        reference_network_path (Path): Path to the reference network TSV file.
+
     Returns:
-        pd.DataFrame: A DataFrame containing the reference network data.
+        pl.LazyFrame: Lazily scanned reference network data.
     """
-    df: pd.DataFrame = pd.read_csv(reference_network_path, sep="\t", header=0)
-    return df
+    return pl.scan_csv(reference_network_path, separator="\t", has_header=True)
 
 
 def init_grn_dataset(
     gene_expressions_path: Path,
-    transcription_factor_path: Optional[Path],
-    reference_network_path: Optional[Path],
+    transcription_factor_path: Optional[Path] = None,
+    reference_network_path: Optional[Path] = None,
 ) -> GRNDataset:
-    gene_expressions: pd.DataFrame = load_gene_expression_data(gene_expressions_path)
-    transcription_factor_names = None
-    if transcription_factor_path is not None:
-        transcription_factor_names: pd.Series = load_transcription_factor_data(
-            transcription_factor_path
-        )
-
-    reference_network = None
-    if reference_network_path is not None:
-        reference_network: pd.DataFrame = load_reference_network_data(
-            reference_network_path
-        )
-
     return GRNDataset(
-        gene_expressions=gene_expressions,
-        transcription_factor_names=transcription_factor_names,
-        reference_network=reference_network,
+        gene_expressions=load_gene_expression_data(gene_expressions_path),
+        transcription_factor_names=(
+            load_transcription_factor_data(transcription_factor_path)
+            if transcription_factor_path is not None
+            else None
+        ),
+        reference_network=(
+            load_reference_network_data(reference_network_path)
+            if reference_network_path is not None
+            else None
+        ),
     )
 
 

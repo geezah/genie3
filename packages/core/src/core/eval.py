@@ -1,17 +1,10 @@
 from typing import Tuple
 
-import cupy as cp
-from cupy.typing import ArrayLike
+import numpy as np
+import polars as pl
+from numpy.typing import ArrayLike
 from pydantic import BaseModel, ConfigDict, Field
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
-
-try:
-    from cudf.pandas import install
-
-    install()
-except ImportError:
-    pass
-import pandas as pd  # noqa : F401
 
 
 class Results(BaseModel):
@@ -47,24 +40,35 @@ class Results(BaseModel):
 
 
 def prepare_evaluation(
-    predicted_network: pd.DataFrame, true_network: pd.DataFrame
+    predicted_network: pl.LazyFrame, true_network: pl.LazyFrame
 ) -> Tuple[ArrayLike, ArrayLike]:
     """
     Prepare the predicted and ground truth network for evaluation.
 
     Args:
-        predicted_network (pd.DataFrame): Predicted network
-        true_network (pd.DataFrame): Ground truth network
+        predicted_network (pl.LazyFrame): Predicted network with columns
+            ``transcription_factor``, ``target_gene``, and ``importance``.
+        true_network (pl.LazyFrame): Ground truth network with columns
+            ``transcription_factor``, ``target_gene``, and ``label``.
 
     Returns:
-        Tuple[ArrayLike, ArrayLike]: Tuple containing importance scores and ground truths as NumPy arrays
+        Tuple[ArrayLike, ArrayLike]: Importance scores and ground-truth labels
+            as NumPy arrays.
     """
-    merged = predicted_network.merge(
-        true_network, on=["transcription_factor", "target_gene"], how="outer"
+    merged = (
+        predicted_network.join(
+            true_network,
+            on=["transcription_factor", "target_gene"],
+            how="right",
+            coalesce=True,
+        )
+        .with_columns(
+            pl.col("importance").fill_null(0.0),
+        )
+        .collect()
     )
-    merged = merged.fillna(0)
-    y_preds = merged["importance"].values
-    y_true = merged["label"].values
+    y_preds = merged["importance"].to_numpy()
+    y_true = merged["label"].to_numpy()
     return y_preds, y_true
 
 
@@ -79,9 +83,9 @@ def run_evaluation(y_preds: ArrayLike, y_true: ArrayLike) -> Results:
         Tuple[float, float]: AUROC and AUPRC scores
     """
     pos_frac: float = y_true.sum() / len(y_true)
-    fpr, tpr, _ = roc_curve(cp.asnumpy(y_true), cp.asnumpy(y_preds))
+    fpr, tpr, _ = roc_curve(np.asarray(y_true), np.asarray(y_preds))
     precision, recall, _ = precision_recall_curve(
-        cp.asnumpy(y_true), cp.asnumpy(y_preds)
+        np.asarray(y_true), np.asarray(y_preds)
     )
     auroc = auc(fpr, tpr)
     auprc = auc(recall, precision)

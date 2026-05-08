@@ -1,18 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Optional, Type
 
-import cupy as cp
-from cupy.typing import ArrayLike
-from cupy_backends.cuda.api.runtime import CUDARuntimeError
+import numpy as np
+from numpy.typing import ArrayLike
+
+try:
+    import cupy as cp
+    from cupy_backends.cuda.api.runtime import CUDARuntimeError
+except ImportError:
+    cp = None
+    CUDARuntimeError = Exception
 from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor
 from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor
 
 # Workaround for bug: https://github.com/cupy/cupy/issues/9091
-try:
-    cp.cuda.is_available()
-except CUDARuntimeError:
-    pass
-CUDA_AVAILABLE: bool = cp.cuda.is_available()
+if cp is not None:
+    try:
+        cp.cuda.is_available()
+    except CUDARuntimeError:
+        pass
+    CUDA_AVAILABLE: bool = cp.cuda.is_available()
+else:
+    CUDA_AVAILABLE: bool = False
 
 CUML_AVAILABLE: bool = False
 if CUDA_AVAILABLE:
@@ -21,6 +30,8 @@ if CUDA_AVAILABLE:
             RandomForestRegressor as _CuRandomForestRegressor,
         )
         from cuml.explainer import TreeExplainer
+
+        CUML_AVAILABLE = True
     except ImportError:
         pass
 
@@ -223,9 +234,9 @@ class ExtraTreesRegressor(BaseRegressor):
         importance_matrix: ArrayLike,
     ) -> tuple[ArrayLike, ArrayLike, ArrayLike]:
         """Convert input types to the appropriate format for the regressor."""
-        gene_expressions = cp.asnumpy(gene_expressions)
-        transcription_factor_indices = cp.asnumpy(transcription_factor_indices)
-        importance_matrix = cp.asnumpy(importance_matrix)
+        gene_expressions = np.asarray(gene_expressions)
+        transcription_factor_indices = np.asarray(transcription_factor_indices)
+        importance_matrix = np.asarray(importance_matrix)
         return (
             gene_expressions,
             transcription_factor_indices,
@@ -268,9 +279,9 @@ class RandomForestRegressor(BaseRegressor):
         importance_matrix: ArrayLike,
     ) -> tuple[ArrayLike, ArrayLike, ArrayLike]:
         """Convert input types to the appropriate format for the regressor."""
-        gene_expressions = cp.asnumpy(gene_expressions)
-        transcription_factor_indices = cp.asnumpy(transcription_factor_indices)
-        importance_matrix = cp.asnumpy(importance_matrix)
+        gene_expressions = np.asarray(gene_expressions)
+        transcription_factor_indices = np.asarray(transcription_factor_indices)
+        importance_matrix = np.asarray(importance_matrix)
         return (
             gene_expressions,
             transcription_factor_indices,
